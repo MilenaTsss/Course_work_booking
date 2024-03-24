@@ -1,0 +1,125 @@
+html, body {
+    font-family: Arial, sans-serif;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #ffe6f2; /* Пастельный розовый цвет для фона */
+}
+
+#main {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+
+.container {
+    width: 50%;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #ff0080; /* Яркий розовый цвет для заголовка */
+}
+
+label {
+    margin-bottom: 5px;
+    color: #ff0080; /* Яркий розовый цвет для текста меток */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ff99cc; /* Светло-розовая рамка для полей ввода */
+}
+
+button {
+    padding: 10px;
+    background-color: #ff0080; /* Яркий розовый цвет для кнопки */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #cc0066; /* Темно-розовый цвет для кнопки при наведении */
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ffe6f2; /* Пастельный розовый цвет для фона */
+}
+
+.container {
+    width: 50%;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #ff0080; /* Яркий розовый цвет для заголовка */
+}
+
+label {
+    margin-bottom: 5px;
+    color: #ff0080; /* Яркий розовый цвет для текста меток */
+}
+
+input[type="tel"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ff99cc; /* Светло-розовая рамка для полей ввода */
+}
+
+button {
+    padding: 10px;
+    background-color: #ff0080; /* Яркий розовый цвет для кнопки */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #cc0066; /* Темно-розовый цвет для кнопки при наведении */
+}
+
+.user-profile-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 10px; /* Добавляем отступ сверху для разделения кнопок от заголовка */
+}
+
+.user-profile-actions button {
+    margin-bottom: 5px; /* Добавляем отступ между кнопками */
+}
