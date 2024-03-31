@@ -42,14 +42,15 @@ class ChangePasswordSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["user_type", "email", "first_name", "last_name", "company_name"]
+        fields = ["id", "user_type", "email", "first_name", "last_name", "company_name"]
         extra_kwargs = {"user_type": {"read_only": True}, "email": {"read_only": True}}
 
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ["name", "description", "execution_duration"]
+        fields = ["id", "name", "owner", "description", "execution_duration"]
+        extra_kwargs = {"name": {"required": True}, "execution_duration": {"required": True}, "id": {"read_only": True}}
 
 
 class ServiceProviderSerializer(serializers.ModelSerializer):

@@ -1,8 +1,7 @@
 from django.contrib.auth.hashers import check_password
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User, Service, Provider
+from .models import User, Service, CUSTOMER
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
     ServiceProviderSerializer, BookingSerializer, UserSerializer
 from django.contrib.auth import authenticate
@@ -108,26 +107,43 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 class ServicesView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
 
-    def get(self, request):
-        return Response(request.user)
+    def get_queryset(self):
+        business_id = self.kwargs['business_id']
+        return Service.objects.filter(owner=business_id)
 
-    def post(self, request):
-        return Response(request.user)
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = ServiceSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-    def patch(self, request):
-        return Response(request.user)
+    def post(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+
+        if request.user.id != business_id:
+            return Response('Permission denied', status.HTTP_403_FORBIDDEN)
+        if request.user.user_type == CUSTOMER:
+            return Response('For administrators only', status=status.HTTP_400_BAD_REQUEST)
+
+        service_data = request.data
+        service_data['owner'] = request.user.id
+        serializer = ServiceSerializer(data=service_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ServiceView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
 
     def get(self, request):
+        return Response(request.user)
+
+    def patch(self, request):
         return Response(request.user)
 
     def delete(self, request):
@@ -135,7 +151,6 @@ class ServiceView(APIView):
 
 
 class ProvidersView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceProviderSerializer
 
@@ -145,16 +160,15 @@ class ProvidersView(APIView):
     def post(self, request):
         return Response(request.user)
 
-    def patch(self, request):
-        return Response(request.user)
-
 
 class ProviderView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceProviderSerializer
 
     def get(self, request):
+        return Response(request.user)
+
+    def patch(self, request):
         return Response(request.user)
 
     def delete(self, request):
@@ -180,14 +194,14 @@ class BookingsView(APIView):
     def post(self, request):
         return Response(request.user)
 
-    def patch(self, request):
-        return Response(request.user)
-
 
 class BookingView(APIView):
     serializer_class = BookingSerializer
 
     def get(self, request):
+        return Response(request.user)
+
+    def patch(self, request):
         return Response(request.user)
 
     def delete(self, request):

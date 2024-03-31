@@ -3,6 +3,8 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
 MAX_LENGTH = 150
+BUSINESS_ADMIN = 0
+CUSTOMER = 1
 
 
 class UserManager(BaseUserManager):
@@ -28,7 +30,7 @@ class User(AbstractBaseUser):
     last_name = models.CharField(_("last name"), max_length=MAX_LENGTH, blank=True)
     company_name = models.CharField(_("company name"), max_length=MAX_LENGTH, blank=True)
 
-    USER_TYPES = [(0, "BusinessAdmin"), (1, "Customer")]
+    USER_TYPES = [(BUSINESS_ADMIN, "BusinessAdmin"), (CUSTOMER, "Customer")]
     user_type = models.IntegerField(_("user type"), choices=USER_TYPES)
 
     USERNAME_FIELD = 'email'
