@@ -1,8 +1,8 @@
 import React, {Component} from "react";
 import {render} from "react-dom";
 import RegisterPage from "./RegisterPage";
-import LoginPage from "./LoginPage";
-import {BrowserRouter as Router, Switch, Route} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import SignIn from "./LoginPage";
 
 export default class App extends Component {
     constructor(props) {
@@ -12,13 +12,11 @@ export default class App extends Component {
     render() {
         return (
             <Router>
-                <Switch>
-                    <Route exact path="/">
-                        <p>This is the home page</p>
-                    </Route>
-                    <Route path="/login" component={LoginPage}/>
-                    <Route path="/register" component={RegisterPage}/>
-                </Switch>
+                <Routes>
+                    <Route path="/" element={<p>This is the home page</p>}/>
+                    <Route path="/login" element={<SignIn/>}/>
+                    <Route path="/register" element={<RegisterPage/>}/>
+                </Routes>
             </Router>
         );
     }

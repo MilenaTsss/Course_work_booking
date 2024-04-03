@@ -1,60 +1,124 @@
-import React, {Component} from "react";
-import Button from "@material-ui/core/Button";
-import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
-import TextField from "@material-ui/core/TextField";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import FormControl from "@material-ui/core/FormControl";
-import {Link} from "react-router-dom";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import {Collapse} from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert";
+import React, {useState} from 'react';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Link from '@mui/material/Link';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import {createTheme, ThemeProvider} from '@mui/material/styles';
+
+const defaultTheme = createTheme({
+    palette: {
+        primary: {
+            main: '#ff0080',
+        },
+        secondary: {
+            main: '#cc0066',
+        },
+        error: {
+            main: '#red',
+        },
+        background: {
+            default: '#fff',
+        },
+    },
+    typography: {
+        fontSize: 14,
+    },
+});
 
 
-export default class LoginPage extends Component {
-    constructor(props) {
-        super(props);
-    }
+export default function LoginPage() {
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
 
-    render() {
-        return (
-            <Grid container spacing={1}>
-                <Grid item xs={12} align="center">
-                    <Typography component="h3" variant="h3">
-                        Авторизация
+        const requestOptions = {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                email: data.get('email'),
+                password: data.get('password'),
+            }),
+        };
+        console.log(requestOptions)
+        fetch("/api/login/", requestOptions)
+            .then((response) => response.json())
+            .then((data) => console.log(data));
+    };
+
+    return (
+        <ThemeProvider theme={defaultTheme}>
+            <Container component="main" maxWidth="xs">
+                <CssBaseline/>
+                <Box
+                    sx={{
+                        marginTop: 8,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Avatar sx={{m: 1, bgcolor: 'secondary.main'}}>
+                        <LockOutlinedIcon/>
+                    </Avatar>
+                    <Typography component="h1" variant="h5">
+                        Sign in
                     </Typography>
-                </Grid>
-
-                <Grid item xs={12} align="center">
-                    <FormControl>
+                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{mt: 1}}>
                         <TextField
-                            variant="standard"
+                            margin="normal"
                             required
+                            fullWidth
                             id="email"
                             label="Email"
                             name="email"
+                            autoComplete="email"
+                            autoFocus
                         />
                         <TextField
-                            variant="standard"
+                            margin="normal"
                             required
-                            id="password"
-                            label="Password"
+                            fullWidth
                             name="password"
+                            label="Password"
+                            type="password"
+                            id="password"
+                            autoComplete="current-password"
                         />
-                    </FormControl>
-                </Grid>
-                <Grid item xs={12} align="center">
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={this.handleRoomButtonPressed}
-                    >
-                        Войти
-                    </Button>
-                </Grid>
-            </Grid>
-        );
-    }
+                        <FormControlLabel
+                            control={<Checkbox value="remember" color="primary"/>}
+                            label="Remember me"
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{mt: 3, mb: 2}}
+                        >
+                            Sign In
+                        </Button>
+                        <Grid container>
+                            <Grid item xs>
+                                <Link href="#" variant="body2">
+                                    Forgot password?
+                                </Link>
+                            </Grid>
+                            <Grid item>
+                                <Link href="#" variant="body2">
+                                    {"Don't have an account? Sign Up"}
+                                </Link>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Box>
+            </Container>
+        </ThemeProvider>
+    );
 }

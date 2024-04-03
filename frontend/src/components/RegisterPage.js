@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {TextField, Button, Typography, Box, Container} from "@material-ui/core"
+import {TextField, Button, Typography, Box, Container} from "@mui/material/"
 
 export default class RegisterPage extends Component {
     constructor(props) {
