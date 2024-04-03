@@ -5,13 +5,14 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
+import Link from '@mui/material/Link';
+import {Link as RouterLink} from 'react-router-dom';
 
 const defaultTheme = createTheme({
     palette: {
@@ -22,7 +23,7 @@ const defaultTheme = createTheme({
             main: '#cc0066',
         },
         error: {
-            main: '#red',
+            main: '#ff0000',
         },
         background: {
             default: '#fff',
@@ -33,24 +34,58 @@ const defaultTheme = createTheme({
     },
 });
 
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const passwordRegex = /^[a-zA-Z0-9`!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~]{6,}$/;
 
 export default function LoginPage() {
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const validateInput = (input, regex, emptyErrorMsg, formatErrorMsg) => {
+        if (!input) {
+            return {isValid: false, error: emptyErrorMsg};
+        } else if (!regex.test(input)) {
+            return {isValid: false, error: formatErrorMsg};
+        } else {
+            return {isValid: true, error: ''};
+        }
+    }
+
     const handleSubmit = (event) => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
 
-        const requestOptions = {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                email: data.get('email'),
-                password: data.get('password'),
-            }),
-        };
-        console.log(requestOptions)
-        fetch("/api/login/", requestOptions)
-            .then((response) => response.json())
-            .then((data) => console.log(data));
+        const data = new FormData(event.currentTarget);
+        const email = data.get('email');
+        const password = data.get('password');
+
+        const emailValidation = validateInput(
+            email,
+            emailRegex,
+            'Email is required',
+            'Email format is invalid'
+        );
+
+        const passwordValidation = validateInput(
+            password,
+            passwordRegex,
+            'Password is required',
+            'Password must be at least 6 characters long and can only contain letters, numbers, and special characters.'
+        );
+
+        setEmailError(emailValidation.error);
+        setPasswordError(passwordValidation.error);
+
+        if (emailValidation.isValid && passwordValidation.isValid) {
+            const requestOptions = {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email: email, password: password}),
+            };
+
+            fetch("/api/login/", requestOptions)
+                .then((response) => response.json())
+                .then((data) => console.log(data));
+        }
     };
 
     return (
@@ -81,16 +116,20 @@ export default function LoginPage() {
                             name="email"
                             autoComplete="email"
                             autoFocus
+                            helperText={emailError}  // Displaying the error on the screen
+                            error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
                         />
                         <TextField
                             margin="normal"
                             required
                             fullWidth
+                            id="password"
                             name="password"
                             label="Password"
                             type="password"
-                            id="password"
                             autoComplete="current-password"
+                            helperText={passwordError}  // Displaying the error on the screen
+                            error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
                         />
                         <FormControlLabel
                             control={<Checkbox value="remember" color="primary"/>}
@@ -104,15 +143,10 @@ export default function LoginPage() {
                         >
                             Sign In
                         </Button>
-                        <Grid container>
-                            <Grid item xs>
-                                <Link href="#" variant="body2">
-                                    Forgot password?
-                                </Link>
-                            </Grid>
+                        <Grid container justifyContent="center" alignItems="center">
                             <Grid item>
-                                <Link href="#" variant="body2">
-                                    {"Don't have an account? Sign Up"}
+                                <Link component={RouterLink} to="/register">
+                                    {"Don't have an account? Register"}
                                 </Link>
                             </Grid>
                         </Grid>

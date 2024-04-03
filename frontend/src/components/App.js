@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {render} from "react-dom";
 import RegisterPage from "./RegisterPage";
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import SignIn from "./LoginPage";
+import LoginPage from "./LoginPage";
 
 export default class App extends Component {
     constructor(props) {
@@ -14,7 +14,7 @@ export default class App extends Component {
             <Router>
                 <Routes>
                     <Route path="/" element={<p>This is the home page</p>}/>
-                    <Route path="/login" element={<SignIn/>}/>
+                    <Route path="/login" element={<LoginPage/>}/>
                     <Route path="/register" element={<RegisterPage/>}/>
                 </Routes>
             </Router>
