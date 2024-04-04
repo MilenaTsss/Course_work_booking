@@ -53,7 +53,6 @@ class LoginAPIView(APIView):
         print(request.data)
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            print('lalalalala')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = authenticate(

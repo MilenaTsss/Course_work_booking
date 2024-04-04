@@ -1,8 +1,9 @@
 import React, {Component} from "react";
 import {render} from "react-dom";
-import RegisterPage from "./RegisterPage";
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import LoginPage from "./LoginPage";
+import RegisterCustomerPage from "./RegisterCustomerPage";
+import RegisterAdminPage from "./RegisterAdminPage";
 
 export default class App extends Component {
     constructor(props) {
@@ -15,7 +16,8 @@ export default class App extends Component {
                 <Routes>
                     <Route path="/" element={<p>This is the home page</p>}/>
                     <Route path="/login" element={<LoginPage/>}/>
-                    <Route path="/register" element={<RegisterPage/>}/>
+                    <Route path="/register" element={<RegisterCustomerPage/>}/>
+                    <Route path="/register/admin" element={<RegisterAdminPage/>}/>
                 </Routes>
             </Router>
         );
