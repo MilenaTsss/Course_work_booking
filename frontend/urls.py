@@ -6,5 +6,6 @@ urlpatterns = [
     path('login/', index),
     path('register/', index),
     path('register/admin', index),
-    path('profile/', index)
+    path('profile/', index),
+    path('admin/', index)
 ]

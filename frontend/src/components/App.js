@@ -7,6 +7,7 @@ import LoginPage from "./LoginPage";
 import RegisterCustomerPage from "./RegisterCustomerPage";
 import RegisterAdminPage from "./RegisterAdminPage";
 import CustomerProfilePage from "./CustomerProfile";
+import AdminProfilePage from "./AdminProfile";
 
 export default class App extends Component {
     constructor(props) {
@@ -22,6 +23,7 @@ export default class App extends Component {
                     <Route path="/register" element={<RegisterCustomerPage/>}/>
                     <Route path="/register/admin" element={<RegisterAdminPage/>}/>
                     <Route path="/profile" element={<CustomerProfilePage/>}/>
+                    <Route path="/admin" element={<AdminProfilePage/>}/>
                 </Routes>
             </Router>
         );
