@@ -12,7 +12,7 @@ import {
     Link
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {validateEmail, validateEmpty, validatePassword} from "./Validation";
+import {validateEmail, validateEmpty, validatePassword} from "./utils/Validation";
 
 export default function RegisterAdminPage() {
     const [emailError, setEmailError] = useState('');

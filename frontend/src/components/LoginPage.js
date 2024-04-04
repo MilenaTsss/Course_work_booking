@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-import {validateEmpty} from "./Validation"
+import {validateEmpty} from "./utils/Validation"
 
 export default function LoginPage() {
     const [emailError, setEmailError] = useState('');
