@@ -12,7 +12,7 @@ const validateInput = (input, regex, emptyErrorMsg, formatErrorMsg) => {
 }
 
 export const validateEmail = email =>
-    validateInput(email, emailRegex, 'Требуется ввести пароль email', 'Неверный формат электронной почты');
+    validateInput(email, emailRegex, 'Требуется ввести email', 'Неверный формат электронной почты');
 
 export const validatePassword = password => validateInput(
     password,

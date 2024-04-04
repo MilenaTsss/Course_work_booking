@@ -24,7 +24,7 @@ class LoginSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         pass
 
-    email = serializers.EmailField(required=True)
+    email = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
 

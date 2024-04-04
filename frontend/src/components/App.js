@@ -1,6 +1,8 @@
 import React, {Component} from "react";
 import {render} from "react-dom";
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {ThemeProvider} from "@mui/material";
+import {defaultTheme} from "./AppTheme";
 import LoginPage from "./LoginPage";
 import RegisterCustomerPage from "./RegisterCustomerPage";
 import RegisterAdminPage from "./RegisterAdminPage";
@@ -24,5 +26,9 @@ export default class App extends Component {
     }
 }
 
-const appDiv = document.getElementById("app");
-render(<App/>, appDiv);
+render(
+    <ThemeProvider theme={defaultTheme}>
+        <App/>
+    </ThemeProvider>,
+    document.getElementById("app")
+);

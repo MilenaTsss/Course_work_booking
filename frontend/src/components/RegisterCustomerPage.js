@@ -9,11 +9,9 @@ import {
     Grid,
     Typography,
     CssBaseline,
-    ThemeProvider,
     Link
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {defaultTheme} from "./AppTheme";
 import {validateEmail, validatePassword} from "./Validation";
 
 export default function RegisterCustomerPage() {
@@ -54,103 +52,101 @@ export default function RegisterCustomerPage() {
     };
 
     return (
-        <ThemeProvider theme={defaultTheme}>
-            <Container component="main" maxWidth="xs">
-                <CssBaseline/>
-                <Box
-                    sx={{
-                        marginTop: 8,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Avatar sx={{m: 1, bgcolor: 'secondary.main'}}>
-                        <LockOutlinedIcon/>
-                    </Avatar>
-                    <Typography component="h1" variant="h5">
-                        Регистрация
-                    </Typography>
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{mt: 3}}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    margin="normal"
-                                    fullWidth
-                                    id="firstName"
-                                    label="Имя"
-                                    name="firstName"
-                                    autoComplete="given-name"
-                                    autoFocus
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    margin="normal"
-                                    fullWidth
-                                    id="lastName"
-                                    label="Фамилия"
-                                    name="lastName"
-                                    autoComplete="family-name"
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    id="email"
-                                    label="Email"
-                                    name="email"
-                                    autoComplete="email"
-                                    autoFocus
-                                    helperText={emailError}  // Displaying the error on the screen
-                                    error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    id="password"
-                                    name="password"
-                                    label="Пароль"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    helperText={passwordError}  // Displaying the error on the screen
-                                    error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
-                                />
-                            </Grid>
-                        </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{mt: 3, mb: 2}}
-                        >
-                            Зарегистрироваться
-                        </Button>
-                    </Box>
-                    <Grid container justifyContent="center" alignItems="center">
-                        <Grid item>
-                            <Button
-                                component={RouterLink} to="/register/admin"
+        <Container component="main" maxWidth="xs">
+            <CssBaseline/>
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Avatar sx={{m: 1, bgcolor: 'secondary.main'}}>
+                    <LockOutlinedIcon/>
+                </Avatar>
+                <Typography component="h1" variant="h5">
+                    Регистрация
+                </Typography>
+                <Box component="form" noValidate onSubmit={handleSubmit} sx={{mt: 3}}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                margin="normal"
                                 fullWidth
-                                variant="outlined"
-                                sx={{mt: 5, mb: 2}}
-                            >
-                                Зарегистрироваться как администратор
-                            </Button>
+                                id="firstName"
+                                label="Имя"
+                                name="firstName"
+                                autoComplete="given-name"
+                                autoFocus
+                            />
                         </Grid>
-                        <Grid item>
-                            <Link component={RouterLink} to="/login">
-                                У вас уже есть учетная запись? Войти
-                            </Link>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                margin="normal"
+                                fullWidth
+                                id="lastName"
+                                label="Фамилия"
+                                name="lastName"
+                                autoComplete="family-name"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="email"
+                                label="Email"
+                                name="email"
+                                autoComplete="email"
+                                autoFocus
+                                helperText={emailError}  // Displaying the error on the screen
+                                error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="password"
+                                name="password"
+                                label="Пароль"
+                                type="password"
+                                autoComplete="new-password"
+                                helperText={passwordError}  // Displaying the error on the screen
+                                error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
+                            />
                         </Grid>
                     </Grid>
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{mt: 3, mb: 2}}
+                    >
+                        Зарегистрироваться
+                    </Button>
                 </Box>
-            </Container>
-        </ThemeProvider>
+                <Grid container justifyContent="center" alignItems="center">
+                    <Grid item>
+                        <Button
+                            component={RouterLink} to="/register/admin"
+                            fullWidth
+                            variant="outlined"
+                            sx={{mt: 5, mb: 2}}
+                        >
+                            Зарегистрироваться как администратор
+                        </Button>
+                    </Grid>
+                    <Grid item>
+                        <Link component={RouterLink} to="/login">
+                            У вас уже есть учетная запись? Войти
+                        </Link>
+                    </Grid>
+                </Grid>
+            </Box>
+        </Container>
     );
 }
