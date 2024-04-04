@@ -7,7 +7,7 @@ export default class CustomerProfile extends Component {
 
     render() {
         return (
-            <h1>Admin dashboard</h1>
+            <h1>Dashboard</h1>
         );
     }
 }

@@ -80,8 +80,8 @@ export default function RegisterAdminPage() {
                                 label="Название компании"
                                 name="companyName"
                                 autoFocus
-                                helperText={nameError}  // Displaying the error on the screen
-                                error={!!nameError}  // Setting error prop to true if there is an error, false otherwise
+                                helperText={nameError}
+                                error={!!nameError}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -94,8 +94,8 @@ export default function RegisterAdminPage() {
                                 name="email"
                                 autoComplete="email"
                                 autoFocus
-                                helperText={emailError}  // Displaying the error on the screen
-                                error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
+                                helperText={emailError}
+                                error={!!emailError}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -108,8 +108,8 @@ export default function RegisterAdminPage() {
                                 label="Пароль"
                                 type="password"
                                 autoComplete="new-password"
-                                helperText={passwordError}  // Displaying the error on the screen
-                                error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
+                                helperText={passwordError}
+                                error={!!passwordError}
                             />
                         </Grid>
                     </Grid>

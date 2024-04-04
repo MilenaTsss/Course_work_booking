@@ -6,6 +6,7 @@ import {defaultTheme} from "./AppTheme";
 import LoginPage from "./LoginPage";
 import RegisterCustomerPage from "./RegisterCustomerPage";
 import RegisterAdminPage from "./RegisterAdminPage";
+import CustomerProfile from "./CustomerProfile";
 
 export default class App extends Component {
     constructor(props) {
@@ -20,6 +21,7 @@ export default class App extends Component {
                     <Route path="/login" element={<LoginPage/>}/>
                     <Route path="/register" element={<RegisterCustomerPage/>}/>
                     <Route path="/register/admin" element={<RegisterAdminPage/>}/>
+                    <Route path="/profile" element={<CustomerProfile/>}/>
                 </Routes>
             </Router>
         );

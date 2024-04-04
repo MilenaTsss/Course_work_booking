@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink,  useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import {
     Avatar,
     Button,
@@ -20,6 +21,8 @@ export default function LoginPage() {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -53,11 +56,14 @@ export default function LoginPage() {
                     setError('Something went wrong');
                 } else {
                     setError(null);
+                    navigate('/profile');
                 }
 
                 return data;
             })
             .then((data) => {
+                const token = data.token;
+                Cookies.set('token', token, {expires: 7, secure: true});
                 console.log(data);
             })
             .catch((error) => {
@@ -93,8 +99,8 @@ export default function LoginPage() {
                         name="email"
                         autoComplete="email"
                         autoFocus
-                        helperText={emailError}  // Displaying the error on the screen
-                        error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
+                        helperText={emailError}
+                        error={!!emailError}
                     />
                     <TextField
                         margin="normal"
@@ -105,8 +111,8 @@ export default function LoginPage() {
                         label="Пароль"
                         type="password"
                         autoComplete="current-password"
-                        helperText={passwordError}  // Displaying the error on the screen
-                        error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
+                        helperText={passwordError}
+                        error={!!passwordError}
                     />
                     <Button
                         type="submit"

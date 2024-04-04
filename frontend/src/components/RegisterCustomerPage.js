@@ -101,8 +101,8 @@ export default function RegisterCustomerPage() {
                                 name="email"
                                 autoComplete="email"
                                 autoFocus
-                                helperText={emailError}  // Displaying the error on the screen
-                                error={!!emailError}  // Setting error prop to true if there is an error, false otherwise
+                                helperText={emailError}
+                                error={!!emailError}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -115,8 +115,8 @@ export default function RegisterCustomerPage() {
                                 label="Пароль"
                                 type="password"
                                 autoComplete="new-password"
-                                helperText={passwordError}  // Displaying the error on the screen
-                                error={!!passwordError}  // Setting error prop to true if there is an error, false otherwise
+                                helperText={passwordError}
+                                error={!!passwordError}
                             />
                         </Grid>
                     </Grid>
