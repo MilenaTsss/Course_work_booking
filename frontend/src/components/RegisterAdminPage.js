@@ -25,7 +25,7 @@ export default function RegisterAdminPage() {
     const [companyNameError, setCompanyNameError] = useState('');
     const [error, setError] = useState(null);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         const data = new FormData(event.currentTarget);
@@ -41,7 +41,7 @@ export default function RegisterAdminPage() {
         setCompanyNameError(companyNameValidation.error);
 
         if (emailValidation.isValid && passwordValidation.isValid) {
-            register(email, password, '', '', companyName, ADMIN_USER_TYPE, navigate, setError);
+            await register(email, password, '', '', companyName, ADMIN_USER_TYPE, navigate, setError);
         }
     };
 

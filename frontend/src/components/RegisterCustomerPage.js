@@ -24,7 +24,7 @@ export default function RegisterCustomerPage() {
     const [passwordError, setPasswordError] = useState('');
     const [error, setError] = useState(null);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         const data = new FormData(event.currentTarget);
@@ -39,7 +39,7 @@ export default function RegisterCustomerPage() {
         setPasswordError(passwordValidation.error);
 
         if (emailValidation.isValid && passwordValidation.isValid) {
-            register(email, password, firstName, lastName, '', CUSTOMER_USER_TYPE, navigate, setError);
+            await register(email, password, firstName, lastName, '', CUSTOMER_USER_TYPE, navigate, setError);
         }
     };
 
