@@ -15,7 +15,7 @@ import {
     Alert
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import {getUser, updateUser} from "./utils/Requests";
+import {getUser, updateUser} from "../user/Requests";
 
 
 export default function CustomerProfilePage() {
@@ -122,20 +122,6 @@ export default function CustomerProfilePage() {
                     </Button>
                 </Box>
 
-                {/*<Typography variant="h2">Past Bookings</Typography>*/}
-                {/*<Select value={booking} onChange={event => setBooking(event.target.value)} fullWidth>*/}
-                {/*    /!* add list of bookings here *!/*/}
-                {/*</Select><br/>*/}
-
-                {/*<FormLabel>Rating:</FormLabel>*/}
-                {/*<TextField type="number" value={rating} onChange={event => setRating(event.target.value)}*/}
-                {/*           fullWidth/><br/>*/}
-                {/*<Button variant="contained" onClick={leaveRating}>Submit Rating</Button><br/>*/}
-
-                {/*<FormLabel>Review:</FormLabel>*/}
-                {/*<TextField multiline maxRows={4} value={review} onChange={event => setReview(event.target.value)}*/}
-                {/*           fullWidth/><br/>*/}
-                {/*<Button variant="contained" onClick={leaveReview}>Leave a Review</Button><br/>*/}
                 {error && (
                     <Alert severity="error" sx={{mt: 5, width: '100%', textAlign: 'center'}}>{error}</Alert>
                 )}

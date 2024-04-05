@@ -3,11 +3,11 @@ import {render} from "react-dom";
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import {ThemeProvider} from "@mui/material";
 import {defaultTheme} from "./utils/AppTheme";
-import LoginPage from "./LoginPage";
-import RegisterCustomerPage from "./RegisterCustomerPage";
-import RegisterAdminPage from "./RegisterAdminPage";
-import CustomerProfilePage from "./CustomerProfile";
-import AdminProfilePage from "./AdminProfile";
+import LoginPage from "./authorization/LoginPage";
+import RegisterCustomerPage from "./authorization/RegisterCustomerPage";
+import RegisterAdminPage from "./authorization/RegisterAdminPage";
+import CustomerProfilePage from "./customer/CustomerProfile";
+import AdminProfilePage from "./admin/AdminProfile";
 
 export default class App extends Component {
     constructor(props) {

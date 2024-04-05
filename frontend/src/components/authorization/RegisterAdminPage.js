@@ -13,9 +13,9 @@ import {
     Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {validateEmail, validateEmpty, validatePassword} from "./utils/Validation";
-import {register} from "./utils/Requests";
-import {ADMIN_USER_TYPE} from "./utils/Constants";
+import {validateEmail, validateEmpty, validatePassword} from "./Validation";
+import {register} from "./Requests";
+import {ADMIN_USER_TYPE} from "../user/Constants";
 
 export default function RegisterAdminPage() {
     const navigate = useNavigate();

@@ -15,7 +15,7 @@ import {
     Alert,
 } from '@mui/material';
 import LogoutIcon from "@mui/icons-material/Logout";
-import {getUser, updateUser} from "./utils/Requests";
+import {getUser, updateUser} from "../user/Requests";
 
 export default function AdminProfilePage() {
     const [user, setUser] = useState(null);

@@ -13,8 +13,8 @@ import {
     Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {validateEmpty} from "./utils/Validation"
-import {login} from "./utils/Requests";
+import {validateEmpty} from "./Validation"
+import {login} from "./Requests";
 
 export default function LoginPage() {
     const [emailError, setEmailError] = useState('');

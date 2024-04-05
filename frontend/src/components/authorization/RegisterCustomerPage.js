@@ -13,9 +13,9 @@ import {
     Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {validateEmail, validatePassword} from "./utils/Validation";
-import {register} from "./utils/Requests";
-import {CUSTOMER_USER_TYPE} from "./utils/Constants";
+import {validateEmail, validatePassword} from "./Validation";
+import {register} from "./Requests";
+import {CUSTOMER_USER_TYPE} from "../user/Constants";
 
 export default function RegisterCustomerPage() {
     const navigate = useNavigate();
