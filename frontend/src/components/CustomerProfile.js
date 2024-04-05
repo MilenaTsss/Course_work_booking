@@ -35,7 +35,7 @@ export default function CustomerProfilePage() {
 
     const handleChangeUserInfo = async (event) => {
         event.preventDefault();
-        await updateUser(firstName, lastName, setUser, setError, setSuccess)
+        await updateUser(firstName, lastName, '', setUser, setError, setSuccess)
     }
 
     useEffect(() => {

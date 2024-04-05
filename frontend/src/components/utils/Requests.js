@@ -17,12 +17,24 @@ export const login = async (email, password, navigate, setError) => {
         } else if (!response.ok) {
             setError('Что-то пошло не так');
         } else {
-            setError(null);
-            navigate('/profile');
-        }
+            const token = data.token;
+            Cookies.set('token', token, {expires: 7, secure: true});
 
-        const token = data.token;
-        Cookies.set('token', token, {expires: 7, secure: true});
+            const user = await getUser(setError);
+            console.log(user.user_type)
+
+            if (user.user_type !== ADMIN_USER_TYPE && user.user_type !== CUSTOMER_USER_TYPE) {
+                setError('Что-то пошло не так');
+            } else {
+                setError(null);
+
+                if (user.user_type === ADMIN_USER_TYPE) {
+                    navigate('/admin');
+                } else {
+                    navigate('/profile');
+                }
+            }
+        }
     } catch (error) {
         console.error('Error:', error);
         setError('Что-то пошло не так');
@@ -92,13 +104,14 @@ export const getUser = async (setError) => {
     }
 }
 
-export const updateUser = async (firstName, lastName, setUser, setError, setSuccess) => {
+export const updateUser = async (firstName, lastName, companyName, setUser, setError, setSuccess) => {
     const requestOptions = {
         method: "PATCH",
         headers: {"Content-Type": "application/json", "Authorization": 'Token ' + Cookies.get('token')},
         body: JSON.stringify({
             first_name: firstName,
             last_name: lastName,
+            company_name: companyName,
         }),
     };
 
