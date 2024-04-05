@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {
     Avatar,
     Button,
@@ -9,15 +9,21 @@ import {
     Grid,
     Typography,
     CssBaseline,
-    Link
+    Link,
+    Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {validateEmail, validateEmpty, validatePassword} from "./utils/Validation";
+import {register} from "./utils/Requests";
+import {ADMIN_USER_TYPE} from "./utils/Constants";
 
 export default function RegisterAdminPage() {
+    const navigate = useNavigate();
+
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-    const [nameError, setNameError] = useState('');
+    const [companyNameError, setCompanyNameError] = useState('');
+    const [error, setError] = useState(null);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -32,23 +38,10 @@ export default function RegisterAdminPage() {
         const companyNameValidation = validateEmpty(companyName, 'Требуется ввести название компании')
         setEmailError(emailValidation.error);
         setPasswordError(passwordValidation.error);
-        setNameError(companyNameValidation.error);
+        setCompanyNameError(companyNameValidation.error);
 
         if (emailValidation.isValid && passwordValidation.isValid) {
-            const requestOptions = {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    company_name: companyName,
-                    user_type: 0
-                }),
-            };
-
-            fetch("/api/register/", requestOptions)
-                .then((response) => response.json())
-                .then((data) => console.log(data));
+            register(email, password, '', '', companyName, ADMIN_USER_TYPE, navigate, setError);
         }
     };
 
@@ -80,8 +73,8 @@ export default function RegisterAdminPage() {
                                 label="Название компании"
                                 name="companyName"
                                 autoFocus
-                                helperText={nameError}
-                                error={!!nameError}
+                                helperText={companyNameError}
+                                error={!!companyNameError}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -139,6 +132,9 @@ export default function RegisterAdminPage() {
                     </Grid>
                 </Grid>
             </Box>
+            {error && (
+                <Alert severity="error" sx={{mt: 5, width: '100%', textAlign: 'center'}}>{error}</Alert>
+            )}
         </Container>
     );
 }

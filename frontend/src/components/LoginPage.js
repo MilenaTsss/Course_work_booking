@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {Link as RouterLink,  useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
 import {
     Avatar,
     Button,
@@ -14,8 +13,8 @@ import {
     Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-
 import {validateEmpty} from "./utils/Validation"
+import {login} from "./utils/Requests";
 
 export default function LoginPage() {
     const [emailError, setEmailError] = useState('');
@@ -24,7 +23,7 @@ export default function LoginPage() {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         const data = new FormData(event.currentTarget);
@@ -40,36 +39,7 @@ export default function LoginPage() {
             return;
         }
 
-        const requestOptions = {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({email: email, password: password}),
-        };
-
-        fetch("/api/login/", requestOptions)
-            .then(async (response) => {
-                const data = await response.json();
-
-                if (response.status === 401) {
-                    setError('Incorrect login or password');
-                } else if (!response.ok) {
-                    setError('Something went wrong');
-                } else {
-                    setError(null);
-                    navigate('/profile');
-                }
-
-                return data;
-            })
-            .then((data) => {
-                const token = data.token;
-                Cookies.set('token', token, {expires: 7, secure: true});
-                console.log(data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                setError('Something went wrong');
-            });
+        await login(email, password, navigate, setError)
     };
 
     return (
@@ -132,7 +102,7 @@ export default function LoginPage() {
                 </Grid>
             </Box>
             {error && (
-                <Alert severity="error" sx={{mt: 10, width: '100%', textAlign: 'center'}}>{error}</Alert>
+                <Alert severity="error" sx={{mt: 5, width: '100%', textAlign: 'center'}}>{error}</Alert>
             )}
         </Container>
     );

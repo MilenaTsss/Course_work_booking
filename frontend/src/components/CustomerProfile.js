@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Cookies from "js-cookie";
-
 import {
     AppBar,
     Toolbar,
@@ -13,102 +12,46 @@ import {
     Grid,
     Typography,
     CssBaseline,
-    FormLabel,
-    Link,
     Alert
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import {validatePassword} from "./utils/Validation";
+import {getUser, updateUser} from "./utils/Requests";
 
 
 export default function CustomerProfilePage() {
     const [user, setUser] = useState(null);
-    const [email, setEmail] = useState('')
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
 
-    const [passwordError, setPasswordError] = useState('');
     const [error, setError] = useState(null);
-
     const [success, setSuccess] = useState(null);
 
     const navigate = useNavigate();
-
-    const getUserInfo = () => {
-        console.log(Cookies.get('token'))
-        const requestOptions = {
-            method: "GET",
-            headers: {"Content-Type": "application/json", "Authorization": 'Token ' + Cookies.get('token')},
-        };
-        console.log(requestOptions)
-
-        fetch("/api/profile/", requestOptions)
-            .then(async (response) => {
-                const data = await response.json();
-                if (!response.ok) {
-                    setSuccess(null);
-                    setError('Что-то пошло не так');
-                } else {
-                    setUser(data)
-                    setEmail(data.email)
-                    setFirstName(data.first_name)
-                    setLastName(data.last_name)
-                    setSuccess(null);
-                    setError(null);
-                }
-                return data;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                setSuccess(null);
-                setError('Что-то пошло не так');
-            });
-    }
 
     const handleLogout = () => {
         Cookies.remove('token');
         navigate("/login");
     };
 
-    const handlePasswordChange = (e) => {
-        e.preventDefault();
-        // Update password here...
-    };
-
-    const handleChangeUserInfo = (event) => {
+    const handleChangeUserInfo = async (event) => {
         event.preventDefault();
-
-        const requestOptions = {
-            method: "PATCH",
-            headers: {"Content-Type": "application/json", "Authorization": 'Token ' + Cookies.get('token')},
-            body: JSON.stringify({
-                first_name: firstName,
-                last_name: lastName,
-            }),
-        };
-
-        fetch("/api/profile/", requestOptions)
-            .then(async (response) => {
-                const data = await response.json();
-                if (!response.ok) {
-                    setSuccess(null);
-                    setError('Что-то пошло не так');
-                } else {
-                    setUser(data)
-                    setSuccess('Данные успешно обновлены')
-                    setError(null);
-                }
-                return data;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                setSuccess(null);
-                setError('Что-то пошло не так.');
-            });
+        await updateUser(firstName, lastName, setUser, setError, setSuccess)
     }
 
     useEffect(() => {
-        getUserInfo()
+        const fetchUser = async () => {
+            try {
+                const fetchedUser = await getUser(setError)
+                setUser(fetchedUser)
+                setFirstName(fetchedUser.first_name)
+                setLastName(fetchedUser.last_name)
+            } catch (e) {
+                setError("Failed to fetch user data");
+                console.error(e);
+            }
+        };
+
+        fetchUser();
     }, []);
 
     return (

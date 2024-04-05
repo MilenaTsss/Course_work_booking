@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {
     Avatar,
     Button,
@@ -9,14 +9,20 @@ import {
     Grid,
     Typography,
     CssBaseline,
-    Link
+    Link,
+    Alert
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {validateEmail, validatePassword} from "./utils/Validation";
+import {register} from "./utils/Requests";
+import {CUSTOMER_USER_TYPE} from "./utils/Constants";
 
 export default function RegisterCustomerPage() {
+    const navigate = useNavigate();
+
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [error, setError] = useState(null);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -33,21 +39,7 @@ export default function RegisterCustomerPage() {
         setPasswordError(passwordValidation.error);
 
         if (emailValidation.isValid && passwordValidation.isValid) {
-            const requestOptions = {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: email,
-                    password: password,
-                    user_type: 1
-                }),
-            };
-
-            fetch("/api/register/", requestOptions)
-                .then((response) => response.json())
-                .then((data) => console.log(data));
+            register(email, password, firstName, lastName, '', CUSTOMER_USER_TYPE, navigate, setError);
         }
     };
 
@@ -147,6 +139,9 @@ export default function RegisterCustomerPage() {
                     </Grid>
                 </Grid>
             </Box>
+            {error && (
+                <Alert severity="error" sx={{mt: 5, width: '100%', textAlign: 'center'}}>{error}</Alert>
+            )}
         </Container>
     );
 }
