@@ -16,11 +16,15 @@ import {
 } from '@mui/material';
 import LogoutIcon from "@mui/icons-material/Logout";
 import {getUser, updateUser} from "../user/Requests";
+import {validateEmpty, validatePassword} from "../authorization/Validation";
+import {changePassword} from "../authorization/Requests";
 
 export default function AdminProfilePage() {
     const [user, setUser] = useState(null);
     const [companyName, setCompanyName] = useState('')
 
+    const [oldPasswordError, setOldPasswordError] = useState('');
+    const [newPasswordError, setNewPasswordError] = useState('');
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
@@ -35,6 +39,25 @@ export default function AdminProfilePage() {
         event.preventDefault();
         await updateUser('', '', companyName, setUser, setError, setSuccess)
     }
+
+    const handlePasswordChange = async (event) => {
+        event.preventDefault();
+
+        const data = new FormData(event.currentTarget);
+        const oldPassword = data.get('oldPassword');
+        const newPassword = data.get('newPassword');
+
+        const oldPasswordValidation = validateEmpty(oldPassword, 'Требуется ввести пароль');
+        const newPasswordValidation = validatePassword(newPassword);
+        setOldPasswordError(oldPasswordValidation.error);
+        setNewPasswordError(newPasswordValidation.error);
+
+        if (!oldPasswordValidation.isValid || !newPasswordValidation.isValid) {
+            return;
+        }
+
+        await changePassword(oldPassword, newPassword, setError, setSuccess);
+    };
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -106,6 +129,48 @@ export default function AdminProfilePage() {
                         sx={{mt: 3, mb: 2}}
                     >
                         Сохранить изменения
+                    </Button>
+                </Box>
+
+                <Box component="form" onSubmit={handlePasswordChange} noValidate sx={{mt: 1}}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                margin="normal"
+                                fullWidth
+                                required
+                                id="oldPassword"
+                                label="Старый пароль"
+                                name="oldPassword"
+                                type="password"
+                                autoComplete="current-password"
+                                helperText={oldPasswordError}
+                                error={!!oldPasswordError}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                margin="normal"
+                                fullWidth
+                                required
+                                id="newPassword"
+                                label="Новый пароль"
+                                name="newPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                helperText={newPasswordError}
+                                error={!!newPasswordError}
+                            />
+                        </Grid>
+                    </Grid>
+
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{mt: 3, mb: 2}}
+                    >
+                        Сменить пароль
                     </Button>
                 </Box>
 

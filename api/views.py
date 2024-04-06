@@ -82,7 +82,7 @@ class ChangePasswordView(APIView):
         new_password = serializer.validated_data.get("new_password")
 
         if not check_password(old_password, request.user.password):
-            return Response({"old_password": ["Invalid old password."]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"old_password": ["Invalid old password."]}, status=status.HTTP_403_FORBIDDEN)
 
         request.user.set_password(new_password)
         request.user.save()
