@@ -11,6 +11,10 @@ export const getUser = async (setError) => {
         const response = await fetch("/api/profile/", requestOptions);
         const data = await response.json();
 
+        if (response.status === 401) {
+            throw new Error('Необходимо авторизоваться');
+        }
+
         if (!response.ok) {
             throw new Error('Что-то пошло не так');
         }
@@ -38,6 +42,10 @@ export const updateUser = async (firstName, lastName, companyName, setUser, setE
     try {
         const response = await fetch("/api/profile/", requestOptions);
         const data = await response.json();
+
+        if (response.status === 401) {
+            throw new Error('Необходимо авторизоваться');
+        }
 
         if (!response.ok) {
             throw new Error('Что-то пошло не так');

@@ -50,7 +50,12 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ["id", "name", "owner", "description", "execution_duration"]
-        extra_kwargs = {"name": {"required": True}, "execution_duration": {"required": True}, "id": {"read_only": True}}
+        extra_kwargs = {
+            "name": {"required": True},
+            "execution_duration": {"required": True},
+            "id": {"read_only": True},
+            "owner": {"required": True}
+        }
 
 
 class ServiceProviderSerializer(serializers.ModelSerializer):

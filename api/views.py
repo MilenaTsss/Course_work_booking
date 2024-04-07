@@ -1,7 +1,7 @@
 from django.contrib.auth.hashers import check_password
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User, Service, CUSTOMER
+from .models import User, Service, CUSTOMER, BUSINESS_ADMIN
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
     ServiceProviderSerializer, BookingSerializer, UserSerializer
 from django.contrib.auth import authenticate
@@ -109,22 +109,29 @@ class ServicesView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
 
-    def get_queryset(self):
-        business_id = self.kwargs['business_id']
-        return Service.objects.filter(owner=business_id)
-
     def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = ServiceSerializer(queryset, many=True)
+        business_id = self.kwargs['business_id']
+        user = User.objects.filter(id=business_id).first()
+
+        if not user:
+            return Response('Given business id not exists', status=status.HTTP_400_BAD_REQUEST)
+        if user.user_type != BUSINESS_ADMIN:
+            return Response('Given id is not a business id', status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ServiceSerializer(Service.objects.filter(owner=business_id), many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         business_id = self.kwargs['business_id']
+        user = User.objects.filter(id=business_id).first()
 
-        if request.user.id != business_id:
+        if not user:
+            return Response('Given business id not exists', status=status.HTTP_400_BAD_REQUEST)
+        if user.user_type != BUSINESS_ADMIN:
+            return Response('Given id is not a business id', status=status.HTTP_400_BAD_REQUEST)
+
+        if request.user.id != business_id or request.user.user_type == CUSTOMER:
             return Response('Permission denied', status.HTTP_403_FORBIDDEN)
-        if request.user.user_type == CUSTOMER:
-            return Response('For administrators only', status=status.HTTP_400_BAD_REQUEST)
 
         service_data = request.data
         service_data['owner'] = request.user.id
@@ -139,11 +146,52 @@ class ServiceView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
 
-    def get(self, request):
-        return Response(request.user)
+    def get(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+        service_id = self.kwargs['service_id']
 
-    def patch(self, request):
-        return Response(request.user)
+        user = User.objects.filter(id=business_id).first()
+
+        if not user:
+            return Response('Given business id not exists', status=status.HTTP_400_BAD_REQUEST)
+        if user.user_type != BUSINESS_ADMIN:
+            return Response('Given id is not a business id', status=status.HTTP_400_BAD_REQUEST)
+
+        service = Service.objects.filter(id=service_id).first()
+
+        if not service:
+            return Response('Incorrect service id', status=status.HTTP_400_BAD_REQUEST)
+        if service.owner_id != user.id:
+            return Response('Service id is not for given business id', status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(ServiceSerializer(service).data)
+
+    def patch(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+        service_id = self.kwargs['service_id']
+
+        user = User.objects.filter(id=business_id).first()
+
+        if not user:
+            return Response('Given business id not exists', status=status.HTTP_400_BAD_REQUEST)
+        if user.user_type != BUSINESS_ADMIN:
+            return Response('Given id is not a business id', status=status.HTTP_400_BAD_REQUEST)
+
+        if request.user.id != business_id or request.user.user_type == CUSTOMER:
+            return Response('Permission denied', status.HTTP_403_FORBIDDEN)
+
+        service = Service.objects.filter(id=service_id).first()
+
+        if not service:
+            return Response('Incorrect service id', status=status.HTTP_400_BAD_REQUEST)
+        if service.owner_id != user.id:
+            return Response('Service id is not for given business id', status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ServiceSerializer(service, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         return Response(request.user)
