@@ -43,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "user_type", "email", "first_name", "last_name", "company_name"]
-        extra_kwargs = {"user_type": {"read_only": True}, "email": {"read_only": True}}
+        extra_kwargs = {"user_type": {"read_only": True}, "email": {"read_only": True}, "password": {"required": True}}
 
 
 class ServiceSerializer(serializers.ModelSerializer):
