@@ -18,10 +18,11 @@ export const login = async (email, password, navigate, setError) => {
         } else if (!response.ok) {
             setError('Что-то пошло не так');
         } else {
-            const user = await getUser(setError);
             const token = data.token;
-            Cookies.set('user', JSON.stringify(user));
             Cookies.set('token', token, {expires: 7, secure: true});
+
+            const user = await getUser(setError);
+            Cookies.set('user', JSON.stringify(user));
 
             if (user.user_type !== ADMIN_USER_TYPE && user.user_type !== CUSTOMER_USER_TYPE) {
                 setError('Что-то пошло не так');
@@ -64,10 +65,11 @@ export const register = async (email, password, firstName, lastName, companyName
         } else if (!response.ok) {
             setError('Что-то пошло не так');
         } else {
+             const token = data.token;
+             Cookies.set('token', token, {expires: 7, secure: true});
+
             const user = await getUser(setError);
-            const token = data.token;
             Cookies.set('user', JSON.stringify(user));
-            Cookies.set('token', token, {expires: 7, secure: true});
 
             if (user.user_type !== CUSTOMER_USER_TYPE && user.user_type !== ADMIN_USER_TYPE) {
                 setError('Что-то пошло не так');
