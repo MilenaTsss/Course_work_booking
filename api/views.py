@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password
+from django.db.models import ProtectedError
 from rest_framework.permissions import IsAuthenticated
 
 from .models import User, Service, CUSTOMER, BUSINESS_ADMIN
@@ -193,8 +194,34 @@ class ServiceView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
-        return Response(request.user)
+    def delete(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+        service_id = self.kwargs['service_id']
+
+        user = User.objects.filter(id=business_id).first()
+
+        if not user:
+            return Response('Given business id not exists', status=status.HTTP_400_BAD_REQUEST)
+        if user.user_type != BUSINESS_ADMIN:
+            return Response('Given id is not a business id', status=status.HTTP_400_BAD_REQUEST)
+
+        if request.user.id != business_id or request.user.user_type == CUSTOMER:
+            return Response('Permission denied', status=status.HTTP_403_FORBIDDEN)
+
+        service = Service.objects.filter(id=service_id).first()
+
+        if not service:
+            return Response('Incorrect service id', status=status.HTTP_400_BAD_REQUEST)
+        if service.owner_id != user.id:
+            return Response('Service id is not for given business id', status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            service.delete()
+            return Response('Service deleted successfully', status=status.HTTP_204_NO_CONTENT)
+        except ProtectedError:
+            return Response('Deletion not allowed.', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response('Unexpected error occurred: ' + str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ProvidersView(APIView):
