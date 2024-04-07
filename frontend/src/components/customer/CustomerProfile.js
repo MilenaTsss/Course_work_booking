@@ -17,11 +17,11 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import {getUser, updateUser} from "../user/Requests";
 import {validateEmpty, validatePassword} from "../authorization/Validation";
-import {changePassword} from "../authorization/Requests";
+import {changePassword, logout} from "../authorization/Requests";
 
 
 export default function CustomerProfilePage() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(JSON.parse(Cookies.get('user') || '{}'));
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
 
@@ -33,8 +33,7 @@ export default function CustomerProfilePage() {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        Cookies.remove('token');
-        navigate("/login");
+        logout(navigate)
     };
 
     const handleChangeUserInfo = async (event) => {
@@ -62,20 +61,16 @@ export default function CustomerProfilePage() {
     };
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const fetchedUser = await getUser(setError)
-                setUser(fetchedUser)
-                setFirstName(fetchedUser.first_name)
-                setLastName(fetchedUser.last_name)
-            } catch (e) {
-                setError("Failed to fetch user data");
-                console.error(e);
-            }
-        };
-
-        fetchUser();
-    }, []);
+        if (user) {
+            setFirstName(user.first_name)
+            setLastName(user.last_name)
+        } else {
+            const fetchedUser = getUser(setError);
+            setUser(fetchedUser);
+            setFirstName(user.first_name)
+            setLastName(user.last_name)
+        }
+    }, [user]);
 
     return (
         <Container component="main" maxWidth="xs">

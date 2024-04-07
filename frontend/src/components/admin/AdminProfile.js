@@ -17,11 +17,11 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import {getUser, updateUser} from "../user/Requests";
 import {validateEmpty, validatePassword} from "../authorization/Validation";
-import {changePassword} from "../authorization/Requests";
+import {changePassword, logout} from "../authorization/Requests";
 
 export default function AdminProfilePage() {
-    const [user, setUser] = useState(null);
-    const [companyName, setCompanyName] = useState('')
+    const [user, setUser] = useState(JSON.parse(Cookies.get('user') || '{}'));
+    const [companyName, setCompanyName] = useState('');
 
     const [oldPasswordError, setOldPasswordError] = useState('');
     const [newPasswordError, setNewPasswordError] = useState('');
@@ -31,8 +31,7 @@ export default function AdminProfilePage() {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        Cookies.remove('token');
-        navigate("/login");
+        logout(navigate);
     };
 
     const handleChangeUserInfo = async (event) => {
@@ -60,19 +59,14 @@ export default function AdminProfilePage() {
     };
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const fetchedUser = await getUser(setError)
-                setUser(fetchedUser)
-                setCompanyName(fetchedUser.company_name)
-            } catch (e) {
-                setError("Failed to fetch user data");
-                console.error(e);
-            }
-        };
-
-        fetchUser();
-    }, []);
+        if (user) {
+            setCompanyName(user.company_name);
+        } else {
+            const fetchedUser = getUser(setError);
+            setUser(fetchedUser);
+            setCompanyName(fetchedUser.company_name);
+        }
+    }, [user]);
 
 
     return (

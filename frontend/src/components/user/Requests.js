@@ -9,13 +9,14 @@ export const getUser = async (setError) => {
 
     try {
         const response = await fetch("/api/profile/", requestOptions);
+        const data = await response.json();
 
         if (!response.ok) {
             throw new Error('Что-то пошло не так');
         }
 
-        const data = await response.json();
         setError(null);
+        Cookies.set('user', JSON.stringify(data));
         return data;
     } catch (error) {
         console.error('Error:', error);
@@ -42,8 +43,9 @@ export const updateUser = async (firstName, lastName, companyName, setUser, setE
             throw new Error('Что-то пошло не так');
         }
 
-        setUser(data)
-        setSuccess('Данные успешно обновлены')
+        setUser(data);
+        Cookies.set('user', JSON.stringify(data));
+        setSuccess('Данные успешно обновлены');
         setError(null);
         return data;
     } catch (error) {
