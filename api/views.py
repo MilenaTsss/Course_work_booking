@@ -1,11 +1,10 @@
 from django.contrib.auth.hashers import check_password
-from django.db.models import ProtectedError
-from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User, Service, CUSTOMER, BUSINESS_ADMIN
+from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
-    ServiceProviderSerializer, BookingSerializer, UserSerializer
+    ProviderSerializer, BookingSerializer, UserSerializer
 from django.contrib.auth import authenticate
 from django.db import DatabaseError
 from rest_framework import generics, status
@@ -118,6 +117,14 @@ def get_service(business_id, service_id):
     return service
 
 
+def get_provider(business_id, provider_id):
+    provider = Provider.objects.filter(id=provider_id).first()
+    if not provider or provider.owner_id != business_id:
+        raise ValidationError('Incorrect provider id')
+
+    return provider
+
+
 def check_user_permissions(request, user):
     if request.user.id != user.id or request.user.user_type == CUSTOMER:
         raise PermissionDenied('Permission denied')
@@ -130,7 +137,7 @@ class ServicesView(APIView):
     def get(self, request, *args, **kwargs):
         business_id = self.kwargs['business_id']
         user = get_user(business_id)
-        serializer = self.serializer_class(Service.objects.filter(owner=user), many=True)
+        serializer = self.serializer_class(Service.objects.filter(owner=user, is_active=True), many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -172,35 +179,67 @@ class ServiceView(APIView):
         check_user_permissions(request, user)
 
         try:
-            service.delete()
-            return Response('Service deleted successfully', status=status.HTTP_204_NO_CONTENT)
-        except ProtectedError:
-            raise ValidationError('Deletion not allowed.')
+            service.is_active = False
+            service.save()
+            return Response('Service deactivated successfully', status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
 
 
 class ProvidersView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ServiceProviderSerializer
+    serializer_class = ProviderSerializer
 
-    def get(self, request):
-        return Response(request.user)
+    def get(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+        user = get_user(business_id)
+        serializer = self.serializer_class(Provider.objects.filter(owner=user, is_active=True), many=True)
+        return Response(serializer.data)
 
-    def post(self, request):
-        return Response(request.user)
+    def post(self, request, *args, **kwargs):
+        business_id = self.kwargs['business_id']
+        user = get_user(business_id)
+        check_user_permissions(request, user)
+
+        provider_data = request.data
+        provider_data['owner'] = request.user.id
+        serializer = self.serializer_class(data=provider_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ProviderView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ServiceProviderSerializer
+    serializer_class = ProviderSerializer
 
-    def get(self, request):
-        return Response(request.user)
+    def get(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        return Response(ProviderSerializer(provider).data)
 
-    def patch(self, request):
-        return Response(request.user)
+    def patch(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        check_user_permissions(request, user)
 
-    def delete(self, request):
-        return Response(request.user)
+        serializer = ProviderSerializer(provider, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        check_user_permissions(request, user)
+
+        try:
+            provider.is_active = False
+            provider.save()
+            return Response('Provider deactivated successfully', status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
 
 
 # class ProviderView(generics.CreateAPIView):

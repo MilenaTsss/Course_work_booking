@@ -50,6 +50,7 @@ class Service(models.Model):
     name = models.CharField(max_length=MAX_LENGTH)
     description = models.TextField()
     execution_duration = models.DurationField()
+    is_active = models.BooleanField(default=True)
     owner = models.ForeignKey("User", on_delete=models.CASCADE)
 
     def __str__(self):

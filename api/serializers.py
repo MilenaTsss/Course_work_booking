@@ -49,19 +49,24 @@ class UserSerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ["id", "name", "owner", "description", "execution_duration"]
+        fields = ["id", "name", "owner", "description", "execution_duration", "is_active"]
         extra_kwargs = {
             "name": {"required": True},
             "execution_duration": {"required": True},
             "id": {"read_only": True},
-            "owner": {"required": True}
+            "owner": {"required": True},
         }
 
 
-class ServiceProviderSerializer(serializers.ModelSerializer):
+class ProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Provider
-        fields = ["first_name", "last_name", "is_active"]
+        fields = ["first_name", "last_name", "owner", "is_active"]
+        extra_kwargs = {
+            "first_name": {"required": True},
+            "id": {"read_only": True},
+            "owner": {"required": True},
+        }
 
 
 class BookingSerializer(serializers.ModelSerializer):
