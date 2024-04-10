@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider, Schedule, Booking
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
-    ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer, AvailabilityInputSerializer
+    ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer
 from django.contrib.auth import authenticate
 from django.db import DatabaseError
 from rest_framework import generics, status
@@ -106,6 +106,15 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save()
+
+
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        user_id = self.kwargs['user_id']
+        return Response(UserSerializer(User.objects.filter(id=user_id).first()).data)
 
 
 def get_user(business_id):
@@ -424,7 +433,7 @@ def is_provider_available(provider: Provider, start_datetime: datetime, required
 
         end_date_time = start_datetime + timedelta(days=1)
         bookings = Booking.objects.filter(service_provider=provider, start_time__range=(start_datetime, end_date_time),
-                                          end_time__range=(start_datetime, end_date_time))
+                                          end_time__range=(start_datetime, end_date_time), is_active=True)
         booked_slots = [(booking.start_time, booking.end_time) for booking in bookings]
         print(booked_slots)
 
@@ -462,15 +471,12 @@ class AvailabilityView(APIView):
         if user.user_type == BUSINESS_ADMIN:
             raise PermissionDenied('Permission denied')
 
-        business_id = self.kwargs['business_id']
-
-        serializer = AvailabilityInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        business_id, service_id, service_provider_id = self.kwargs['business_id'], self.kwargs['service_id'], \
+            self.kwargs['service_provider_id']
         try:
             business = get_user(business_id)
-            service = get_service(business.id, request.data.get('service_id'))
-            provider = get_provider(business.id, request.data.get('service_provider_id'))
-            print(business, service, provider)
+            service = get_service(business.id, service_id)
+            provider = get_provider(business.id, service_provider_id)
 
             result = []
             current_time = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)

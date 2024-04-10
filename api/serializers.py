@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Service, Provider, User, Booking, Schedule, MAX_LENGTH
+from .models import Service, Provider, User, Booking, Schedule
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -93,8 +93,3 @@ class BookingSerializer(serializers.ModelSerializer):
             "service": {"required": True},
             "service_provider": {"required": True},
         }
-
-
-class AvailabilityInputSerializer(serializers.Serializer):
-    service_id = serializers.CharField(max_length=MAX_LENGTH)
-    service_provider_id = serializers.CharField(max_length=MAX_LENGTH)
