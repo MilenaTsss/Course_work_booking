@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
@@ -39,7 +40,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def get_full_name(self):
-        full_name = "%s %s" % (self.first_name, self.last_name)
+        full_name = "%s %s %s" % (self.first_name, self.last_name, self.company_name)
         return full_name.strip()
 
     def get_short_name(self):
@@ -76,19 +77,6 @@ class ServiceProviderRelation(models.Model):
                f"service: {self.service.name} "
 
 
-class Booking(models.Model):
-    customer = models.ForeignKey("User", on_delete=models.CASCADE)
-    service = models.ForeignKey("Service", on_delete=models.CASCADE)
-    service_provider = models.ForeignKey("Provider", on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-
-    def __str__(self):
-        return f"customer: {self.customer} " \
-               f"service: {self.service.name} " \
-               f"service provider: {self.service_provider.first_name} " \
-               f"start time: {self.start_time}"
-
-
 class Schedule(models.Model):
     DAY_CHOICES = [(1, "Monday"), (2, "Tuesday"), (3, "Wednesday"), (4, "Thursday"), (5, "Friday"), (6, "Saturday"),
                    (7, "Sunday")]
@@ -102,4 +90,25 @@ class Schedule(models.Model):
         return f"service provider: {self.service_provider.first_name} " \
                f"day of week: {self.day_of_week} " \
                f"start time: {self.start_time} " \
+               f"end time: {self.end_time}"
+
+
+class Booking(models.Model):
+    customer = models.ForeignKey("User", on_delete=models.CASCADE)
+    business = models.ForeignKey("User", on_delete=models.CASCADE, related_name='business', default=None)
+    service = models.ForeignKey("Service", on_delete=models.CASCADE)
+    service_provider = models.ForeignKey("Provider", on_delete=models.CASCADE)
+    start_time = models.DateTimeField(default=None)
+    end_time = models.DateTimeField(default=None)
+    is_active = models.BooleanField(default=True)
+    comment = models.TextField(null=True)
+    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], null=True,
+                                              default=None)
+
+    def __str__(self):
+        return f"customer: {self.customer} " \
+               f"business: {self.business} " \
+               f"service: {self.service.name} " \
+               f"service provider: {self.service_provider.first_name} " \
+               f"start time: {self.start_time}" \
                f"end time: {self.end_time}"

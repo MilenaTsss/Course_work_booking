@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider, Schedule
+from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider, Schedule, Booking
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
     ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer
 from django.contrib.auth import authenticate
@@ -11,6 +11,10 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+
+from datetime import datetime
+
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -266,14 +270,6 @@ class ScheduleView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-def get_schedule(provider_id, day_of_week):
-    schedule = Schedule.objects.filter(service_provider_id=provider_id, day_of_week=day_of_week).first()
-    if not schedule:
-        raise ValidationError('Incorrect provider id')
-
-    return schedule
-
-
 class ScheduleItemView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ScheduleSerializer
@@ -322,6 +318,99 @@ class ScheduleItemView(APIView):
             raise APIException('Unexpected error occurred: ' + str(e))
 
 
+class BookingsView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookingSerializer
+
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(id=request.user.id)
+        if user.user_type == CUSTOMER:
+            serializer = self.serializer_class(Booking.objects.filter(customer=user).order_by('-start_time'), many=True)
+        else:
+            serializer = self.serializer_class(Booking.objects.filter(business=user).order_by('-start_time'), many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        user = User.objects.get(id=request.user.id)
+        if user.user_type == BUSINESS_ADMIN:
+            raise PermissionDenied('Permission denied')
+
+        try:
+            service = Service.objects.get(id=request.data.get('service'))
+            provider = Provider.objects.get(id=request.data.get('service_provider'))
+            if User.objects.get(id=service.owner_id) != User.objects.get(id=provider.owner_id):
+                raise ValidationError('Service and provider have different owner')
+            print(request.data)
+            if service.owner_id != request.data.get('business'):
+                raise ValidationError('Invalid business id or service id')
+
+            booking_data = request.data
+            booking_data['customer'] = request.user.id
+
+            end_time_dt = datetime.strptime(request.data.get('start_time'),
+                                            DATE_TIME_FORMAT) + service.execution_duration
+            booking_data['end_time'] = end_time_dt.strftime(DATE_TIME_FORMAT)
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
+
+        serializer = self.serializer_class(data=booking_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def get_booking(user, booking_id):
+    booking = Booking.objects.filter(id=booking_id).first()
+    if not booking:
+        raise ValidationError('Incorrect booking id')
+    if user.user_type == CUSTOMER and booking.customer_id != user.id:
+        raise ValidationError('Incorrect booking id')
+    if user.user_type == BUSINESS_ADMIN and booking.business_id != user.id:
+        raise ValidationError('Incorrect booking id')
+    return booking
+
+
+class BookingView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookingSerializer
+
+    def get(self, request, *args, **kwargs):
+        booking_id = self.kwargs['booking_id']
+
+        user = User.objects.get(id=request.user.id)
+        booking = get_booking(user, booking_id)
+        return Response(BookingSerializer(booking).data)
+
+    def patch(self, request, *args, **kwargs):
+        booking_id = self.kwargs['booking_id']
+        user = User.objects.get(id=request.user.id)
+        if user.user_type == BUSINESS_ADMIN:
+            raise PermissionDenied('Permission denied')
+        booking = get_booking(user, booking_id)
+
+        serializer = BookingSerializer(booking, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        booking_id = self.kwargs['booking_id']
+        user = User.objects.get(id=request.user.id)
+        booking = get_booking(user, booking_id)
+
+        try:
+            booking.is_active = False
+            booking.save()
+            return Response('Booking canceled successfully', status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
+
+
+class AvailabilityView(APIView):
+    def get(self, request):
+        return Response()
+
 # class ProviderView(generics.CreateAPIView):
 #     queryset = Provider.objects.all()
 #     serializer_class = ServiceProviderSerializer
@@ -354,36 +443,3 @@ class ScheduleItemView(APIView):
 #         return False
 #
 #     return True
-
-
-class BookingsView(APIView):
-    serializer_class = BookingSerializer
-
-    def get(self, request):
-        return Response(request.user)
-
-    def post(self, request):
-        return Response(request.user)
-
-
-class BookingView(APIView):
-    serializer_class = BookingSerializer
-
-    def get(self, request):
-        return Response(request.user)
-
-    def patch(self, request):
-        return Response(request.user)
-
-    def delete(self, request):
-        return Response(request.user)
-
-
-class AvailabilityView(APIView):
-    def get(self, request):
-        return Response()
-
-
-class ReviewView(APIView):
-    def post(self, request):
-        return Response()

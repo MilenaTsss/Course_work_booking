@@ -17,9 +17,7 @@ urlpatterns = [
     path('provider/<int:business_id>/<int:provider_id>/schedule-item/', views.ScheduleItemView.as_view()),
 
     path('bookings/', views.BookingsView.as_view()),
-    path('booking/<int:business_id>/', views.BookingView.as_view()),
+    path('booking/<int:booking_id>/', views.BookingView.as_view()),
 
     path('availability/<int:business_id>/', views.AvailabilityView.as_view()),
-
-    path('review/<int:booking_id>/', views.ReviewView.as_view()),
 ]

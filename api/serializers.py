@@ -83,4 +83,13 @@ class ScheduleSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ["customer", "service", "service_provider", "start_time"]
+        fields = ["id", "customer", "business", "service", "service_provider", "start_time", "end_time", "is_active",
+                  "rating", "comment"]
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "start_time": {"required": True},
+            "customer": {"required": True},
+            "business": {"required": True},
+            "service": {"required": True},
+            "service_provider": {"required": True},
+        }
