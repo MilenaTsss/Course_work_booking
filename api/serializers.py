@@ -61,7 +61,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 class ProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Provider
-        fields = ["first_name", "last_name", "owner", "is_active"]
+        fields = ["id", "first_name", "last_name", "owner", "is_active"]
         extra_kwargs = {
             "first_name": {"required": True},
             "id": {"read_only": True},
