@@ -1,10 +1,12 @@
 from django.contrib.auth.hashers import check_password
+from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.permissions import IsAuthenticated
 
 from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider, Schedule, Booking
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
-    ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer
+    ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer, AvailabilityInputSerializer
 from django.contrib.auth import authenticate
 from django.db import DatabaseError
 from rest_framework import generics, status
@@ -12,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
@@ -407,39 +409,77 @@ class BookingView(APIView):
             raise APIException('Unexpected error occurred: ' + str(e))
 
 
+def is_provider_available(provider: Provider, start_datetime: datetime, required_duration):
+    try:
+        if Schedule.objects.filter(service_provider=provider, day_of_week=start_datetime.isoweekday()).first() is None:
+            print("Not working")
+            return []
+
+        working_hours_start = Schedule.objects.filter(service_provider=provider,
+                                                      day_of_week=start_datetime.isoweekday()).first().start_time
+        working_hours_end = Schedule.objects.filter(service_provider=provider,
+                                                    day_of_week=start_datetime.isoweekday()).first().end_time
+
+        print(working_hours_start, working_hours_end)
+
+        end_date_time = start_datetime + timedelta(days=1)
+        bookings = Booking.objects.filter(service_provider=provider, start_time__range=(start_datetime, end_date_time),
+                                          end_time__range=(start_datetime, end_date_time))
+        booked_slots = [(booking.start_time, booking.end_time) for booking in bookings]
+        print(booked_slots)
+
+        available_slots = []
+
+        current_time = start_datetime
+
+        while current_time + required_duration <= end_date_time:
+            if current_time.time() <= working_hours_start or current_time.time() >= working_hours_end:
+                current_time = current_time + required_duration
+                continue
+            overlaps = False
+
+            for booked_start, booked_end in booked_slots:
+                # Check if current slot overlaps with a booked slot
+                if current_time < booked_end and current_time + required_duration > booked_start:
+                    overlaps = True
+            if not overlaps:
+                available_slots.append((current_time, current_time + required_duration))
+
+            current_time = current_time + required_duration
+
+    except Exception as e:
+        raise APIException('Unexpected error occurred: ' + str(e))
+
+    return available_slots
+
+
 class AvailabilityView(APIView):
-    def get(self, request):
-        return Response()
+    permission_classes = [IsAuthenticated]
+    serializer_class = BookingSerializer
 
-# class ProviderView(generics.CreateAPIView):
-#     queryset = Provider.objects.all()
-#     serializer_class = ServiceProviderSerializer
-#
-#
-# class ProviderListView(generics.ListAPIView):
-#     queryset = Provider.objects.all()
-#     serializer_class = ServiceProviderSerializer
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(id=request.user.id)
+        if user.user_type == BUSINESS_ADMIN:
+            raise PermissionDenied('Permission denied')
 
-# def is_provider_available(self):
-#     # check if provider works on that day
-#     weekday = self.start_time.weekday()
-#     try:
-#         working_hours = self.service_provider.working_hours.get(day=weekday)
-#     except Schedule.DoesNotExist:
-#         return False
-#
-#     # check if provider has time on that day
-#     end_time = self.start_time + self.service.execution_duration
-#     if end_time.time() > working_hours.to_hour or self.start_time.time() < working_hours.from_hour:
-#         return False
-#
-#     # check if provider is booked at the requested time
-#     overlapping_bookings = Bookings.objects.filter(
-#         service_provider=self.service_provider,
-#         start_time__lt=end_time,
-#         end_time__gt=self.start_time
-#     )
-#     if overlapping_bookings.exists():
-#         return False
-#
-#     return True
+        business_id = self.kwargs['business_id']
+
+        serializer = AvailabilityInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            business = get_user(business_id)
+            service = get_service(business.id, request.data.get('service_id'))
+            provider = get_provider(business.id, request.data.get('service_provider_id'))
+            print(business, service, provider)
+
+            result = []
+            current_time = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            for i in range(0, 2):
+                result += is_provider_available(provider, current_time, service.execution_duration)
+
+                current_time = current_time + timedelta(days=1)
+
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
+
+        return JsonResponse({'dates': result}, safe=False)
