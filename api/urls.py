@@ -13,6 +13,9 @@ urlpatterns = [
     path('providers/<int:business_id>/', views.ProvidersView.as_view()),
     path('provider/<int:business_id>/<int:provider_id>/', views.ProviderView.as_view()),
 
+    path('provider/<int:business_id>/<int:provider_id>/schedule/', views.ScheduleView.as_view()),
+    path('provider/<int:business_id>/<int:provider_id>/schedule-item/', views.ScheduleItemView.as_view()),
+
     path('bookings/', views.BookingsView.as_view()),
     path('booking/<int:business_id>/', views.BookingView.as_view()),
 

@@ -2,9 +2,9 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider
+from .models import User, Service, CUSTOMER, BUSINESS_ADMIN, Provider, Schedule
 from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ServiceSerializer, \
-    ProviderSerializer, BookingSerializer, UserSerializer
+    ProviderSerializer, BookingSerializer, UserSerializer, ScheduleSerializer
 from django.contrib.auth import authenticate
 from django.db import DatabaseError
 from rest_framework import generics, status
@@ -117,14 +117,6 @@ def get_service(business_id, service_id):
     return service
 
 
-def get_provider(business_id, provider_id):
-    provider = Provider.objects.filter(id=provider_id).first()
-    if not provider or provider.owner_id != business_id:
-        raise ValidationError('Incorrect provider id')
-
-    return provider
-
-
 def check_user_permissions(request, user):
     if request.user.id != user.id or request.user.user_type == CUSTOMER:
         raise PermissionDenied('Permission denied')
@@ -186,6 +178,14 @@ class ServiceView(APIView):
             raise APIException('Unexpected error occurred: ' + str(e))
 
 
+def get_provider(business_id, provider_id):
+    provider = Provider.objects.filter(id=provider_id).first()
+    if not provider or provider.owner_id != business_id:
+        raise ValidationError('Incorrect provider id')
+
+    return provider
+
+
 class ProvidersView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProviderSerializer
@@ -242,6 +242,86 @@ class ProviderView(APIView):
             raise APIException('Unexpected error occurred: ' + str(e))
 
 
+class ScheduleView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ScheduleSerializer
+
+    def get(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+
+        serializer = self.serializer_class(Schedule.objects.filter(service_provider=provider), many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        check_user_permissions(request, user)
+
+        schedule_data = request.data
+        schedule_data['service_provider'] = provider_id
+        serializer = self.serializer_class(data=schedule_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def get_schedule(provider_id, day_of_week):
+    schedule = Schedule.objects.filter(service_provider_id=provider_id, day_of_week=day_of_week).first()
+    if not schedule:
+        raise ValidationError('Incorrect provider id')
+
+    return schedule
+
+
+class ScheduleItemView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ScheduleSerializer
+
+    def get(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+
+        serializer = self.serializer_class(
+            Schedule.objects.filter(service_provider_id=provider_id, day_of_week=request.data.get('day_of_week')),
+            many=True
+        )
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        check_user_permissions(request, user)
+
+        try:
+            schedule = Schedule.objects.get(service_provider_id=provider_id,
+                                            day_of_week=request.data.get('day_of_week'))
+        except Schedule.DoesNotExist:
+            return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(schedule, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
+        user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        check_user_permissions(request, user)
+
+        try:
+            schedule = Schedule.objects.get(service_provider_id=provider_id,
+                                            day_of_week=request.data.get('day_of_week'))
+        except Schedule.DoesNotExist:
+            return Response({"error": "Schedule not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            schedule.delete()
+            return Response('Schedule successfully deleted.', status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException('Unexpected error occurred: ' + str(e))
+
+
 # class ProviderView(generics.CreateAPIView):
 #     queryset = Provider.objects.all()
 #     serializer_class = ServiceProviderSerializer
@@ -250,6 +330,30 @@ class ProviderView(APIView):
 # class ProviderListView(generics.ListAPIView):
 #     queryset = Provider.objects.all()
 #     serializer_class = ServiceProviderSerializer
+
+# def is_provider_available(self):
+#     # check if provider works on that day
+#     weekday = self.start_time.weekday()
+#     try:
+#         working_hours = self.service_provider.working_hours.get(day=weekday)
+#     except Schedule.DoesNotExist:
+#         return False
+#
+#     # check if provider has time on that day
+#     end_time = self.start_time + self.service.execution_duration
+#     if end_time.time() > working_hours.to_hour or self.start_time.time() < working_hours.from_hour:
+#         return False
+#
+#     # check if provider is booked at the requested time
+#     overlapping_bookings = Bookings.objects.filter(
+#         service_provider=self.service_provider,
+#         start_time__lt=end_time,
+#         end_time__gt=self.start_time
+#     )
+#     if overlapping_bookings.exists():
+#         return False
+#
+#     return True
 
 
 class BookingsView(APIView):

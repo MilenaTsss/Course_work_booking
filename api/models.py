@@ -47,9 +47,9 @@ class User(AbstractBaseUser):
 
 
 class Service(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH)
-    description = models.TextField()
-    execution_duration = models.DurationField()
+    name = models.CharField(max_length=MAX_LENGTH, null=False)
+    description = models.TextField(null=True)
+    execution_duration = models.DurationField(null=False)
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey("User", on_delete=models.CASCADE)
 
@@ -95,8 +95,8 @@ class Schedule(models.Model):
 
     service_provider = models.ForeignKey("Provider", on_delete=models.CASCADE)
     day_of_week = models.IntegerField(choices=DAY_CHOICES)
-    start_time = models.TimeField
-    end_time = models.TimeField
+    start_time = models.TimeField(default="00:00:00")
+    end_time = models.TimeField(default="00:00:00")
 
     def __str__(self):
         return f"service provider: {self.service_provider.first_name} " \

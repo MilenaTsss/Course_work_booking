@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Service, Provider, User, Booking
+from .models import Service, Provider, User, Booking, Schedule
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -66,6 +66,17 @@ class ProviderSerializer(serializers.ModelSerializer):
             "first_name": {"required": True},
             "id": {"read_only": True},
             "owner": {"required": True},
+        }
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = ["id", "day_of_week", "start_time", "end_time", "service_provider"]
+        extra_kwargs = {
+            "day_of_week": {"required": True},
+            "id": {"read_only": True},
+            "service_provider": {"required": True},
         }
 
 
