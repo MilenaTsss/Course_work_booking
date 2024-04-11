@@ -351,8 +351,7 @@ class BookingsView(APIView):
             provider = Provider.objects.get(id=request.data.get('service_provider'))
             if User.objects.get(id=service.owner_id) != User.objects.get(id=provider.owner_id):
                 raise ValidationError('Service and provider have different owner')
-            print(request.data)
-            if service.owner_id != request.data.get('business'):
+            if service.owner_id != int(request.data.get('business')):
                 raise ValidationError('Invalid business id or service id')
 
             booking_data = request.data

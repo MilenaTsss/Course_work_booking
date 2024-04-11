@@ -23,7 +23,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {getUser} from "../user/Requests";
 import {getBookings, deleteBooking} from "./Requests";
 
-export default function BookingsPage() {
+export default function AdminBookingsPage() {
     const [user, setUser] = useState(JSON.parse(Cookies.get('user') || '{}'));
     const [bookings, setBookings] = useState([]);
     const [selectedMenu, setSelectedMenu] = useState(null);
@@ -94,13 +94,13 @@ export default function BookingsPage() {
                         open={Boolean(selectedMenu)}
                         onClose={handleMenuClose}
                     >
-                        <MenuItem onClick={() => navigate("/admin")}>Profile</MenuItem>
-                        <MenuItem onClick={() => navigate("/admin/services")}>Services</MenuItem>
-                        <MenuItem onClick={() => navigate("/admin/providers")}>Providers</MenuItem>
-                        <MenuItem onClick={() => navigate("/admin/bookings")}>Bookings</MenuItem>
+                        <MenuItem onClick={() => navigate("/admin")}>Профиль</MenuItem>
+                        <MenuItem onClick={() => navigate("/admin/services")}>Сервисы</MenuItem>
+                        <MenuItem onClick={() => navigate("/admin/providers")}>Исполнители</MenuItem>
+                        <MenuItem onClick={() => navigate("/admin/bookings")}>Бронирования</MenuItem>
                         <MenuItem onClick={handleLogout}>
                             <LogoutIcon/>
-                            Logout
+                            Выйти
                         </MenuItem>
                     </Menu>
                 </Toolbar>
@@ -132,6 +132,7 @@ export default function BookingsPage() {
                                 Конец - {formatDate(booking.end_time)}
                             </Typography>
                             {!booking.is_active && <Typography variant="body2" color="error">Отменено</Typography>}
+                            <Typography variant="body2">{booking.comment} {booking.rating}</Typography>
                         </CardContent>
                         <CardActions sx={{justifyContent: 'space-between'}}>
                             <Button size="small" onClick={() => deleteExistingBooking(booking.id)}>Delete</Button>

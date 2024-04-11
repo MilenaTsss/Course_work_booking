@@ -8,6 +8,12 @@ import RegisterCustomerPage from "./authorization/RegisterCustomerPage";
 import RegisterAdminPage from "./authorization/RegisterAdminPage";
 import CustomerProfilePage from "./customer/CustomerProfile";
 import AdminProfilePage from "./admin/AdminProfile";
+import ServicesPage from "./admin/ServicesPage";
+import ProvidersPage from "./admin/ProvidersPage";
+import AddSchedulePage from "./admin/test";
+import BookingPage from "./booking/BookingPage";
+import CustomerBookingsPage from "./customer/CustomerBookingsPage";
+import AdminBookingsPage from "./admin/AdminBookingsPage";
 
 export default class App extends Component {
     constructor(props) {
@@ -24,6 +30,12 @@ export default class App extends Component {
                     <Route path="/register/admin" element={<RegisterAdminPage/>}/>
                     <Route path="/profile" element={<CustomerProfilePage/>}/>
                     <Route path="/admin" element={<AdminProfilePage/>}/>
+                    <Route path="/admin/services" element={<ServicesPage/>}/>
+                    <Route path="/admin/providers" element={<ProvidersPage/>}/>
+                    <Route path="/test" element={<AddSchedulePage/>}/>
+                    <Route path="/booking/:adminId" element={<BookingPage />} />
+                    <Route path="profile/bookings" element={<CustomerBookingsPage/>}/>
+                    <Route path="admin/bookings" element={<AdminBookingsPage/>}/>
                 </Routes>
             </Router>
         );

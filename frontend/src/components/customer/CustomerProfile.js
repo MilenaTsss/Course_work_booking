@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, Link} from 'react-router-dom';
 import Cookies from "js-cookie";
 import {
     AppBar,
@@ -15,6 +15,7 @@ import {
     Alert
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import BookingIcon from '@mui/icons-material/CalendarToday';
 import {getUser, updateUser} from "../user/Requests";
 import {validateEmpty, validatePassword} from "../authorization/Validation";
 import {changePassword, logout} from "../authorization/Requests";
@@ -87,6 +88,9 @@ export default function CustomerProfilePage() {
                         <Typography component="h1" variant="h5" sx={{flexGrow: 1, textAlign: 'center'}}>
                             Профиль
                         </Typography>
+                        <IconButton color="inherit" component={Link} to="/profile/bookings">
+                            <BookingIcon/>
+                        </IconButton>
                         <IconButton color="inherit" onClick={handleLogout}>
                             <LogoutIcon/>
                         </IconButton>
