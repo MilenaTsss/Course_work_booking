@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.hashers import check_password
 from django.http import JsonResponse
 from django.utils import timezone
@@ -18,6 +20,8 @@ from datetime import datetime, timedelta
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
+logger = logging.getLogger(__name__)
+
 
 class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -34,6 +38,8 @@ class RegisterAPIView(generics.CreateAPIView):
             user = self.perform_create(serializer)
             token, created = Token.objects.get_or_create(user=user)
             headers = self.get_success_headers(serializer.data)
+            logger.info(
+                f'Creating user with data: {request.data.get("email")} with type {request.data.get("user_type")}')
             return Response({'token': token.key}, status=status.HTTP_201_CREATED, headers=headers)
         except DatabaseError:
             return Response({'message': 'Database error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -64,6 +70,7 @@ class LoginAPIView(APIView):
 
         token, _ = Token.objects.get_or_create(user=user)
 
+        logger.info(f'Login user with data: {request.data.get("email")}')
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
@@ -88,6 +95,8 @@ class ChangePasswordView(APIView):
 
         self.change_password(request.user, new_password)
 
+        logger.info(f'Changed password for user "{self.kwargs["user_id"]}"')
+
         return Response({"success": "Password changed successfully"}, status=status.HTTP_200_OK)
 
 
@@ -102,6 +111,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(instance=self.get_object(), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        logger.info(f'Updated profile data for user "{self.kwargs["user_id"]}"')
         return Response(serializer.data)
 
     def perform_update(self, serializer):
@@ -145,6 +155,7 @@ class ServicesView(APIView):
         business_id = self.kwargs['business_id']
         user = get_user(business_id)
         serializer = self.serializer_class(Service.objects.filter(owner=user, is_active=True), many=True)
+        logger.info(f'Got services for business {business_id} for user "{self.kwargs["user_id"]}"')
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -157,6 +168,7 @@ class ServicesView(APIView):
         serializer = self.serializer_class(data=service_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info(f'Added new service for business {business_id}"')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -167,6 +179,7 @@ class ServiceView(APIView):
     def get(self, request, *args, **kwargs):
         business_id, service_id = self.kwargs['business_id'], self.kwargs['service_id']
         user, service = get_user(business_id), get_service(business_id, service_id)
+        logger.info(f'Got service {self.kwargs["service_id"]} for user {self.kwargs["service_id"]}')
         return Response(ServiceSerializer(service).data)
 
     def patch(self, request, *args, **kwargs):
@@ -178,6 +191,8 @@ class ServiceView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        logger.info(f'Edited service {self.kwargs["service_id"]}')
+
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
@@ -188,6 +203,7 @@ class ServiceView(APIView):
         try:
             service.is_active = False
             service.save()
+            logger.info(f'Deleted service {self.kwargs["service_id"]}')
             return Response('Service deactivated successfully', status=status.HTTP_200_OK)
         except Exception as e:
             raise APIException('Unexpected error occurred: ' + str(e))
@@ -209,6 +225,7 @@ class ProvidersView(APIView):
         business_id = self.kwargs['business_id']
         user = get_user(business_id)
         serializer = self.serializer_class(Provider.objects.filter(owner=user, is_active=True), many=True)
+        logger.info(f'Got providers for business {business_id}')
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -221,6 +238,7 @@ class ProvidersView(APIView):
         serializer = self.serializer_class(data=provider_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info(f'Added service for business {business_id}')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -231,6 +249,7 @@ class ProviderView(APIView):
     def get(self, request, *args, **kwargs):
         business_id, provider_id = self.kwargs['business_id'], self.kwargs['provider_id']
         user, provider = get_user(business_id), get_provider(business_id, provider_id)
+        logger.info(f'Got provider {provider_id} for user {self.kwargs["user_id"]}')
         return Response(ProviderSerializer(provider).data)
 
     def patch(self, request, *args, **kwargs):
@@ -242,6 +261,8 @@ class ProviderView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        logger.info(f'Edited provider {provider_id}')
+
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
@@ -252,6 +273,7 @@ class ProviderView(APIView):
         try:
             provider.is_active = False
             provider.save()
+            logger.info(f'Deactivated provider {provider_id}')
             return Response('Provider deactivated successfully', status=status.HTTP_200_OK)
         except Exception as e:
             raise APIException('Unexpected error occurred: ' + str(e))
@@ -266,6 +288,7 @@ class ScheduleView(APIView):
         user, provider = get_user(business_id), get_provider(business_id, provider_id)
 
         serializer = self.serializer_class(Schedule.objects.filter(service_provider=provider), many=True)
+        logger.info(f'Got schedule for business {business_id} for provider {provider_id}')
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -278,6 +301,8 @@ class ScheduleView(APIView):
         serializer = self.serializer_class(data=schedule_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        logger.info(f'Edited schedule for provider {provider_id}')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -293,6 +318,7 @@ class ScheduleItemView(APIView):
             Schedule.objects.filter(service_provider_id=provider_id, day_of_week=request.data.get('day_of_week')),
             many=True
         )
+        logger.info(f'Got schedule item for provider {provider_id}')
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
@@ -309,6 +335,7 @@ class ScheduleItemView(APIView):
         serializer = self.serializer_class(schedule, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info(f'Edited schedule item for provider {provider_id}')
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
@@ -324,6 +351,7 @@ class ScheduleItemView(APIView):
 
         try:
             schedule.delete()
+            logger.info(f'Deleted schedule item for provider {provider_id}')
             return Response('Schedule successfully deleted.', status=status.HTTP_200_OK)
         except Exception as e:
             raise APIException('Unexpected error occurred: ' + str(e))
@@ -339,6 +367,7 @@ class BookingsView(APIView):
             serializer = self.serializer_class(Booking.objects.filter(customer=user).order_by('-start_time'), many=True)
         else:
             serializer = self.serializer_class(Booking.objects.filter(business=user).order_by('-start_time'), many=True)
+            logger.info(f'Got bookings for user {user.id} with type {user.user_type}')
         return Response(serializer.data)
 
     def post(self, request):
@@ -366,6 +395,8 @@ class BookingsView(APIView):
         serializer = self.serializer_class(data=booking_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        logger.info(f'Created new booking for user {user.id} for business {request.data.get("business")}')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -389,6 +420,7 @@ class BookingView(APIView):
 
         user = User.objects.get(id=request.user.id)
         booking = get_booking(user, booking_id)
+        logger.info(f'Got booking info for user {user.id} with booking id {booking_id}')
         return Response(BookingSerializer(booking).data)
 
     def patch(self, request, *args, **kwargs):
@@ -402,6 +434,8 @@ class BookingView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        logger.info(f'Edited booking by user {user.id} with booking id {booking_id}')
+
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
@@ -412,6 +446,8 @@ class BookingView(APIView):
         try:
             booking.is_active = False
             booking.save()
+
+            logger.info(f'Deleted booking by user {user.id} with booking id {booking_id}')
             return Response('Booking canceled successfully', status=status.HTTP_200_OK)
         except Exception as e:
             raise APIException('Unexpected error occurred: ' + str(e))
@@ -487,4 +523,6 @@ class AvailabilityView(APIView):
         except Exception as e:
             raise APIException('Unexpected error occurred: ' + str(e))
 
+        logger.info(
+            f'Checked booking by user {user.id} with business_id {business_id}, service_id {service_id}, provider_id {service_provider_id}')
         return JsonResponse({'dates': result}, safe=False)
