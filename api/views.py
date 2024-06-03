@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import check_password
 from django.http import JsonResponse
 from django.utils import timezone
+from django.core.paginator import Paginator
 from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.permissions import IsAuthenticated
 
@@ -336,10 +337,24 @@ class BookingsView(APIView):
     def get(self, request, *args, **kwargs):
         user = User.objects.get(id=request.user.id)
         if user.user_type == CUSTOMER:
-            serializer = self.serializer_class(Booking.objects.filter(customer=user).order_by('-start_time'), many=True)
+            bookings = Booking.objects.filter(customer=user).order_by('-start_time')
         else:
-            serializer = self.serializer_class(Booking.objects.filter(business=user).order_by('-start_time'), many=True)
-        return Response(serializer.data)
+            bookings = Booking.objects.filter(business=user).order_by('-start_time')
+
+        page_number = request.query_params.get('page', 1)
+        page_size = request.query_params.get('size', 10)
+        paginator = Paginator(bookings, page_size)
+        page = paginator.get_page(page_number)
+        serializer = self.serializer_class(page, many=True)
+
+        # Add page and total pages to the response
+        response_data = {
+            'results': serializer.data,
+            'page': page.number,
+            'total_pages': paginator.num_pages,
+        }
+        print(response_data)
+        return Response(response_data)
 
     def post(self, request):
         user = User.objects.get(id=request.user.id)
