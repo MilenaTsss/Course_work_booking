@@ -2,23 +2,29 @@ import React, {useEffect, useState} from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import Cookies from "js-cookie";
 import {
-    Box,
-    Typography,
-    CssBaseline,
-    AppBar,
-    Toolbar,
-    IconButton,
-    Button,
     Alert,
+    AppBar,
+    Box,
+    Button,
     Card,
     CardActions,
     CardContent,
-    Container, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Dialog,
+    Container,
+    CssBaseline,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    IconButton,
+    TextField,
+    Toolbar,
+    Typography,
 } from '@mui/material';
 import LogoutIcon from "@mui/icons-material/Logout";
 
 import {getUser} from "../user/Requests";
-import {addFeedback, deleteBooking, getBookings} from "../admin/Requests";
+import {addFeedback, deleteBooking, getBookings, PAGE_SIZE} from "../admin/Requests";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 
 export default function CustomerBookingsPage() {
@@ -37,6 +43,8 @@ export default function CustomerBookingsPage() {
         endTime: '',
         isActive: '',
     })
+    const [totalPages, setTotalPages] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1); // Add state for the current page
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const navigate = useNavigate();
@@ -46,7 +54,7 @@ export default function CustomerBookingsPage() {
         const dateTime = new Date(input);
 
         // Format date to YYYY/MM/DD and time to HH:MM
-        const formattedDateTime = dateTime.toLocaleString("en-US", {
+        return dateTime.toLocaleString("en-US", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -54,8 +62,6 @@ export default function CustomerBookingsPage() {
             minute: "2-digit",
             hour12: false,
         });
-
-        return formattedDateTime;
     }
 
     useEffect(() => {
@@ -64,11 +70,23 @@ export default function CustomerBookingsPage() {
                 const fetchedUser = await getUser(setError);
                 setUser(fetchedUser);
             }
-            setBookings(await getBookings(setError))
+
+            try {
+                const data = await getBookings(currentPage, setError);
+                if (data && data.results) {
+                    setBookings(data.results);
+                    setTotalPages(data.total_pages);
+                } else {
+                    setError('Error: Could not retrieve bookings data');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                setError('Error: Could not retrieve bookings data');
+            }
         };
 
         fetchData();
-    }, [user])
+    }, [user, currentPage])
 
     const handleLogout = () => {
         Cookies.remove('token');
@@ -152,6 +170,22 @@ export default function CustomerBookingsPage() {
                         </CardActions>
                     </Card>
                 )}
+                <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}>
+                    <Button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        sx={{mr: 1}}>
+                        Previous
+                    </Button>
+                    <Typography sx={{mr: 1}}>
+                        Page {currentPage} of {totalPages}
+                    </Typography>
+                    <Button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}>
+                        Next
+                    </Button>
+                </Box>
                 <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                     <DialogTitle>{"Добавить отзыв"}</DialogTitle>
 
