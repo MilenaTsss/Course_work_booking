@@ -2,30 +2,32 @@ import React, {useEffect, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import Cookies from "js-cookie";
 import {
-    Box,
-    Typography,
-    CssBaseline,
-    AppBar,
-    Toolbar,
-    IconButton,
-    Button,
     Alert,
+    AppBar,
+    Box,
+    Button,
     Card,
     CardActions,
     CardContent,
+    Container,
+    CssBaseline,
+    IconButton,
     Menu,
     MenuItem,
-    Container,
+    Toolbar,
+    Typography,
 } from '@mui/material';
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from '@mui/icons-material/Menu';
 
 import {getUser} from "../user/Requests";
-import {getBookings, deleteBooking} from "./Requests";
+import {deleteBooking, getBookings} from "./Requests";
 
 export default function AdminBookingsPage() {
     const [user, setUser] = useState(JSON.parse(Cookies.get('user') || '{}'));
     const [bookings, setBookings] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1); // Add state for the current page
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
@@ -36,7 +38,7 @@ export default function AdminBookingsPage() {
         const dateTime = new Date(input);
 
         // Format date to YYYY/MM/DD and time to HH:MM
-        const formattedDateTime = dateTime.toLocaleString("en-US", {
+        return dateTime.toLocaleString("en-US", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -44,8 +46,6 @@ export default function AdminBookingsPage() {
             minute: "2-digit",
             hour12: false,
         });
-
-        return formattedDateTime;
     }
 
 
@@ -55,11 +55,19 @@ export default function AdminBookingsPage() {
                 const fetchedUser = await getUser(setError);
                 setUser(fetchedUser);
             }
-            setBookings(await getBookings(setError))
+            const data = await getBookings(currentPage, setError);
+            // Extract the 'results' array from the response data
+            const bookingsArray = data.results;
+            setBookings(bookingsArray);
+            // Extract the 'total_pages' from the response data
+            const totalPages = data.total_pages;
+            setTotalPages(totalPages);
+
+            //setBookings(await getBookings(currentPage, setError))
         };
 
         fetchData();
-    }, [user]);
+    }, [user, currentPage]);
 
     const handleMenuSelect = (event) => {
         setSelectedMenu(event.currentTarget);
@@ -139,6 +147,23 @@ export default function AdminBookingsPage() {
                         </CardActions>
                     </Card>
                 )}
+                {/* Add pagination controls */}
+                <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}>
+                    <Button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        sx={{mr: 1}}>
+                        Previous
+                    </Button>
+                    <Typography sx={{mr: 1}}>
+                        Page {currentPage} of {totalPages}
+                    </Typography>
+                    <Button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}>
+                        Next
+                    </Button>
+                </Box>
 
                 {error && (
                     <Alert severity="error" sx={{mt: 5, width: '100%', textAlign: 'center'}}>{error}</Alert>

@@ -1,5 +1,7 @@
 import Cookies from "js-cookie";
 
+export const PAGE_SIZE = 10; // Set the page size to 10 items
+
 export const getServices = async (businessId, setError) => {
     console.log(Cookies.get('token'))
     const requestOptions = {
@@ -177,7 +179,7 @@ export const addProvider = async (businessId, firstname, lastname, setError, set
 
 // Обновление информации о провайдере
 export const updateProvider = async (businessId, providerId, providerData, setError, setSuccess) => {
-   const requestOptions = {
+    const requestOptions = {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -302,7 +304,7 @@ export const updateProviderScheduleItem = async (businessId, providerId, schedul
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
+        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/schedule-item/", requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
@@ -330,7 +332,7 @@ export const deleteProviderScheduleItem = async (businessId, providerId, schedul
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
+        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/schedule-item/", requestOptions);
 
         if (response.status === 401) {
             throw new Error('Необходимо авторизоваться');
@@ -400,27 +402,44 @@ export const getProvider = async (businessId, providerId, setError) => {
     }
 }
 
-export const getBookings = async (setError) => {
-    const requestOptions = {
-        method: "GET",
-        headers: {"Content-Type": "application/json", "Authorization": 'Token ' + Cookies.get('token')},
-    };
+export const getBookingsRequest = async (page, pageSize, requestOptions) => {
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page);
+    queryParams.append("page_size", pageSize);
+    requestOptions.search = queryParams;
 
     try {
         const response = await fetch("/api/bookings/", requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
-            throw new Error('Необходимо авторизоваться');
+            throw new Error("Необходимо авторизоваться");
         }
         if (!response.ok) {
-            throw new Error('Что-то пошло не так');
+            throw new Error("Что-то пошло не так");
         }
 
-        for (let i = 0; i < data.length; i++) {
-            data[i].customer = await getUser(data[i].customer, setError)
-            data[i].business = await getUser(data[i].business, setError)
-            data[i].service_provider = await getProvider(data[i].business.id, data[i].service_provider, setError)
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+        throw error;
+    }
+};
+
+export const getBookings = async (page, setError) => {
+    const requestOptions = {
+        method: "GET",
+        headers: {"Content-Type": "application/json", "Authorization": 'Token ' + Cookies.get('token')},
+    };
+
+    try {
+        const data = await getBookingsRequest(page, PAGE_SIZE, requestOptions);
+
+        for (let i = 0; i < data.results.length; i++) {
+            data.results[i].customer = await getUser(data.results[i].customer, setError)
+            data.results[i].business = await getUser(data.results[i].business, setError)
+            data.results[i].service_provider =
+                await getProvider(data.results[i].business.id, data.results[i].service_provider, setError)
         }
 
         setError(null);
