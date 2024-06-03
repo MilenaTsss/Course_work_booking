@@ -90,7 +90,7 @@ export const getProviderSchedule = async (businessId, providerId, setError) => {
     };
 
     try {
-        const response = await fetch(`/api/provider/${businessId}/${providerId}/schedule/`, requestOptions);
+        const response = await fetch(`/api/providers/${businessId}/${providerId}/schedule/`, requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {

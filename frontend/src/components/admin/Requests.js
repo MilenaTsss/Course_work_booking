@@ -70,7 +70,7 @@ export const updateService = async (businessId, serviceId, updatedServiceData, s
     };
 
     try {
-        const response = await fetch("/api/service/" + businessId + "/" + serviceId + "/", requestOptions);
+        const response = await fetch("/api/services/" + businessId + "/" + serviceId + "/", requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
@@ -99,7 +99,7 @@ export const deleteService = async (businessId, serviceId, setError, setSuccess)
     };
 
     try {
-        const response = await fetch("/api/service/" + businessId + "/" + serviceId + "/", requestOptions);
+        const response = await fetch("/api/services/" + businessId + "/" + serviceId + "/", requestOptions);
 
         if (response.status === 401) {
             throw new Error('Необходимо авторизоваться');
@@ -187,7 +187,7 @@ export const updateProvider = async (businessId, providerId, providerData, setEr
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" + providerId + "/", requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
@@ -216,7 +216,7 @@ export const deleteProvider = async (businessId, providerId, setError, setSucces
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" + providerId + "/", requestOptions);
 
         if (response.status === 401) {
             throw new Error('Необходимо авторизоваться');
@@ -242,7 +242,7 @@ export const getProviderSchedule = async (businessId, providerId, setError) => {
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/" + "schedule/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" + providerId + "/" + "schedule/", requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
@@ -273,7 +273,7 @@ export const addProviderSchedule = async (businessId, providerId, dayOfWeek, sta
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" + providerId + "/schedule/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" + providerId + "/schedule/", requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
@@ -302,7 +302,7 @@ export const updateProviderScheduleItem = async (businessId, providerId, schedul
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
@@ -330,7 +330,7 @@ export const deleteProviderScheduleItem = async (businessId, providerId, schedul
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
+        const response = await fetch("/api/providers/" + businessId + "/" +providerId + "/schedule-item/", requestOptions);
 
         if (response.status === 401) {
             throw new Error('Необходимо авторизоваться');
@@ -382,7 +382,7 @@ export const getProvider = async (businessId, providerId, setError) => {
     };
 
     try {
-        const response = await fetch("/api/provider/" + businessId + '/' + providerId, requestOptions);
+        const response = await fetch("/api/providers/" + businessId + '/' + providerId, requestOptions);
         const data = await response.json();
 
         if (response.status === 401) {
